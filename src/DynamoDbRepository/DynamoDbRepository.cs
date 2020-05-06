@@ -11,7 +11,7 @@ namespace DynamoDbRepository
     public abstract class DynamoDbRepository<TKey, TEntity> : DynamoDbRepositoryBase, IAsyncRepository<TKey, TEntity> 
         where TEntity : class,IEntityKey<TKey> 
     {
-        public DynamoDbRepository(string tableName) : base(tableName)
+        public DynamoDbRepository(string tableName, string serviceUrl = null) : base(tableName, serviceUrl)
         {
         }
 
@@ -19,7 +19,14 @@ namespace DynamoDbRepository
 
         protected abstract TEntity FromDynamoDb(Dictionary<string, AttributeValue> item);
 
-        protected abstract Dictionary<string, AttributeValue> ToDynamoDbPrimaryKey(TKey id);
+        protected virtual Dictionary<string, AttributeValue> ToDynamoDbPrimaryKey(TKey id)
+        {
+            return new Dictionary<string, AttributeValue>
+                {
+                    { PK, PKAttributeValue(id) },
+                    { SK, SKAttributeValue(id) },
+                };
+        }
 
 
         #region [    IAsyncReadRepository interface    ]

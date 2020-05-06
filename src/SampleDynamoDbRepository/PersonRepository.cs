@@ -6,7 +6,7 @@ namespace SampleDynamoDbRepository
 {
     public class PersonRepository : DynamoDbRepository<int, Person>
     {
-        public PersonRepository(string tableName) : base(tableName)
+        public PersonRepository(string tableName, string serviceUrl = null) : base(tableName, serviceUrl)
         {
             PKPrefix = "PERSON";
             SKPrefix = "METADATA";
@@ -37,15 +37,6 @@ namespace SampleDynamoDbRepository
             // for GSI query all 
             dbItem.Add(GSI1, StringAttributeValue(PKPrefix));
             return dbItem;
-        }
-
-        protected override Dictionary<string, AttributeValue> ToDynamoDbPrimaryKey(int id)
-        {
-            return new Dictionary<string, AttributeValue>
-                {
-                    { PK, PKAttributeValue(id) },
-                    { SK, SKAttributeValue(id) },
-                };
         }
     }
 }

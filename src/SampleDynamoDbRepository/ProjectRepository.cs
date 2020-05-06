@@ -6,7 +6,7 @@ namespace SampleDynamoDbRepository
 {
     public class ProjectRepository : DynamoDbRepository<string, Project>
     {
-        public ProjectRepository(string tableName) : base(tableName)
+        public ProjectRepository(string tableName, string serviceUrl = null) : base(tableName, serviceUrl)
         {
             PKPrefix = "PROJECT";
             SKPrefix = "METADATA";
@@ -33,15 +33,6 @@ namespace SampleDynamoDbRepository
             result.Name = GetStringAttributeValue("Name", item);
             result.Description = GetStringAttributeValue("Description", item);
             return result;
-        }
-
-        protected override Dictionary<string, AttributeValue> ToDynamoDbPrimaryKey(string id)
-        {
-            return new Dictionary<string, AttributeValue>
-                {
-                    { PK, PKAttributeValue(id) },
-                    { SK, SKAttributeValue(id) },
-                };
         }
     }
 }

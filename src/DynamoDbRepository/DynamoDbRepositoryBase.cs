@@ -16,10 +16,18 @@ namespace DynamoDbRepository
         protected string PKPrefix = "";
         protected string SKPrefix = "";
 
-        public DynamoDbRepositoryBase(string tableName)
+        public DynamoDbRepositoryBase(string tableName, string serviceUrl = null)
         {
             _tableName = tableName;
-            _dynamoDbClient = new AmazonDynamoDBClient();
+            if (serviceUrl != null)
+            {
+                var config = new AmazonDynamoDBConfig { ServiceURL = serviceUrl };
+                _dynamoDbClient = new AmazonDynamoDBClient(config);
+            }
+            else
+            {
+                _dynamoDbClient = new AmazonDynamoDBClient();
+            }            
         }
 
         protected string GetStringAttributeValue(string key, Dictionary<string, AttributeValue> item)

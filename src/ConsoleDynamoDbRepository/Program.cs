@@ -12,7 +12,7 @@ namespace ConsoleDynamoDbRepository
         {
             await TestProjectRepositoryCRUD();
 
-            await TestUserRepositoryCRUD();
+            // await TestUserRepositoryCRUD();
 
             // await TestUserRepositoryDeleteItemsOneByOne();
 
@@ -127,7 +127,7 @@ namespace ConsoleDynamoDbRepository
             uA.FirstName = "UserUser";
             uA.LastName = "AA AA";
             Console.WriteLine("* Updating user A - renamed to AA");
-            await repo.AddAsync(uA);
+            await repo.UpdateAsync(uA);
             // Console.WriteLine($"success = {rr}");
 
             Console.WriteLine("* Retrieving user A after update");
