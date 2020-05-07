@@ -1,6 +1,6 @@
 # DynamoDB base repository
 
-This repository contains a C# .NET Core implementation of the repository pattern using DynamoDB as data store.
+C# .NET Core implementation of the repository pattern using DynamoDB as data store using hierarchical data.
 
 ## Data model assumptions
 
