@@ -48,11 +48,13 @@ PROJECT | METADATA#P3 | P3 | Project 3 | desc project 3
 
 ## Usage
 
-Define your entity so that it implements ```IEntityKey<TKey>```, the simplest way is to inherit from ```Entity``` or ```Entity<TId>```. It provides the **Id** property.
+Define your entity as a POCO, no need to implement any interface or annotate anything.
 
 ```cs
-    public class User : Entity<string>
+    public class User
     {
+        public string Id { get; set; }
+
         public string Name { get; set; }
 
         public string FirstName { get; set; }
@@ -75,37 +77,48 @@ These values can be arbitrary values provided PKPrefix is unique across all enti
     }
 ```
 
-Then override both **ToDynamoDb** and **FromDynamoDb** abstract methods. The expectation is that these methods will provide enough information to map between the Entity and DynamoDB attribute dictionary.
+Override **GetEntityKey** abstract method, this method should return the Identity of the given entity. Normally it will return the value of the Id property.
 
-There are some helper methods to reduce the boilerplate code:
-* PKAttributeValue deals with the PK value generation given the entity Id.
-* SKAttributeValue deals with the SK value generation given the entity Id.
-* StringAttributeValue converts a string to an AttributeValue expected by DynamoDB.
-* GetStringAttributeValue converts an AttributeValue from DynamoDB to a string
+```cs
+    protected override string GetEntityKey(User item)
+    {
+        return item.Id;
+    }
+```
 
-Example ToDynamoDb implementation:
+Override **ToDynamoDb** virtual method, this method should transform an instance of the entity into a DynamoDB attribute dictionary. A base implementation is provided which deals with the PK, SK and GSI attributes. So your only responsibility is to map the actual data attributes. 
+
+Some helper methods are provided to reduce the boilerplate code:
+
+* StringAttributeValue converts a **string** to an AttributeValue expected by DynamoDB.
+* NumberAttributeValue (**int** and **double**) converts a numeric value to an AttributeValue expected by DynamoDB.
+
+Example of typical ```ToDynamoDb``` implementation:
 
 ```cs
     protected override Dictionary<string, AttributeValue> ToDynamoDb(User item)
     {
-        var dbItem = new Dictionary<string, AttributeValue>();
-        dbItem.Add(PK, PKAttributeValue(item.Id));
-        dbItem.Add(SK, SKAttributeValue(item.Id));
-
+        var dbItem = base.ToDynamoDb(item);
+        
         dbItem.Add("Id", StringAttributeValue(item.Id));
         dbItem.Add("Name", StringAttributeValue(item.Name));
         dbItem.Add("FirstName", StringAttributeValue(item.FirstName));
         dbItem.Add("LastName", StringAttributeValue(item.LastName));
         dbItem.Add("Email", StringAttributeValue(item.Email));
-        // for GSI query all 
-        dbItem.Add(GSI1, StringAttributeValue(PKPrefix));
+
         return dbItem;
     }
 ```
 
-The last line adds the GSI1 value so we can perform the get all query.
+Override **FromDynamoDb** abstract method. This method should transform an instance of a DynamoDB attribute dictionary into an instance of the entity.
 
-Example FromDynamoDb implementation:
+Some helper methods are provided to reduce the boilerplate code:
+
+* GetStringAttributeValue converts an AttributeValue from DynamoDB to a string.
+* GetNumberInt32AttributeValue converts an AttributeValue from DynamoDB to an int.
+* GetNumberDoubleAttributeValue converts an AttributeValue from DynamoDB to a double.
+
+Example of typical ```FromDynamoDb``` implementation:
 
 ```cs
     protected override User FromDynamoDb(Dictionary<string, AttributeValue> item)
@@ -124,20 +137,19 @@ The base class also provides basic CRUD like methods already implemented followi
 
 Retrieving operations:
 
-* ```Task<TEntity> FindByAsync(TKey id)``` 
-* ```Task<IList<TEntity>> AllAsync()```
+* ```Task<TEntity> GetItemAsync(TKey id)``` 
+* ```Task<IList<TEntity>> GetAllAsync()```
 * ```Task<int> CountAsync()```
 
 Single item add, update, delete:
 
-* ```Task AddAsync(TEntity item)```
-* ```Task UpdateAsync(TEntity item)```
-* ```Task DeleteAsync(TEntity item)```
-* ```Task DeleteAsync(TKey id)```
+* ```Task AddItemAsync(TEntity item)```
+* ```Task UpdateItemAsync(TEntity item)```
+* ```Task DeleteItemAsync(TKey id)```
 
 Batch insert and delete: 
-* ```Task AddAsync(IEnumerable<TEntity> items)```
-* ```DeleteAsync(IEnumerable<TEntity> items)```
+* ```Task BatchAddItemAsync(IEnumerable<TEntity> items)```
+* ```Task BatchDeleteItemsAsync(IEnumerable<TEntity> items)```
 
 ## Example: CRUD operations
 
@@ -150,12 +162,12 @@ Here is an example of performing all basic CRUD operations in a sequence.
 
         var uA = new User { Id = "A", Name = "userA", FirstName = "User", LastName = "A", Email = "a@test.com" };
         Console.WriteLine("* Creating user A");
-        await repo.AddAsync(uA);
+        await repo.AddItemAsync(uA);
 
         Console.WriteLine("* Retrieving user A");
-        var uuA = await repo.FindByAsync("A");
+        var uuA = await repo.GetItemAsync("A");
         if (uuA != null)
-            Console.WriteLine(uuA);
+            Console.WriteLine(JsonSerializer.Serialize(uuA));
         else
             Console.WriteLine("not found");
 
@@ -167,12 +179,12 @@ Here is an example of performing all basic CRUD operations in a sequence.
         uA.FirstName = "UserUser";
         uA.LastName = "AA AA";
         Console.WriteLine("* Updating user A - renamed to AA");
-        await repo.UpdateAsync(uA);
+        await repo.UpdateItemAsync(uA);
 
         Console.WriteLine("* Retrieving user A after update");
-        var uAUpdated = await repo.FindByAsync("A");
+        var uAUpdated = await repo.GetItemAsync("A");
         if (uAUpdated != null)
-            Console.WriteLine(uAUpdated);
+            Console.WriteLine(JsonSerializer.Serialize(uAUpdated));
         else
             Console.WriteLine("not found");
 
@@ -180,12 +192,12 @@ Here is an example of performing all basic CRUD operations in a sequence.
 
 
         Console.WriteLine("* Deleting user A");
-        await repo.DeleteAsync("A");
+        await repo.DeleteItemAsync("A");
 
         Console.WriteLine("* Retrieving user A after deletion");
-        var deletedA = await repo.FindByAsync("A");
+        var deletedA = await repo.GetItemAsync("A");
         if (deletedA != null)
-            Console.WriteLine(deletedA);
+            Console.WriteLine(JsonSerializer.Serialize(deletedA));
         else
             Console.WriteLine("not found");
     }
@@ -196,7 +208,7 @@ Here is an example of performing all basic CRUD operations in a sequence.
 Here is an example of performing batch insert.
 
 ```cs
-    private static async Task TestUserRepositoryAddBatchItems()
+    private static async Task TestUserRepositoryBatchAddItems()
     {
         var repo = new UserRepository(_tableName);
         var itemsToCreate = new List<User>();
@@ -207,7 +219,7 @@ Here is an example of performing batch insert.
             Console.WriteLine("* Adding to list user " + uA.Id);
 
         }
-        await repo.AddAsync(itemsToCreate);
+        await repo.BatchAddItemAsync(itemsToCreate);
         Console.WriteLine("***** Done adding all items");
     }
 ```
@@ -215,7 +227,7 @@ Here is an example of performing batch insert.
 Here is an example of performing batch delete.
 
 ```cs
-    private static async Task TestUserRepositoryDeleteBatchItems()
+    private static async Task TestUserRepositoryBatchDeleteItems()
     {
         var repo = new UserRepository(_tableName);
         var itemsToDelete = new List<User>();
@@ -226,7 +238,7 @@ Here is an example of performing batch delete.
             Console.WriteLine("* Adding to delete list, user " + uA.Id);
 
         }
-        await repo.DeleteAsync(itemsToDelete);
+        await repo.BatchDeleteItemsAsync(itemsToDelete);
         Console.WriteLine("***** Done deleting all items");
     }
 ```
