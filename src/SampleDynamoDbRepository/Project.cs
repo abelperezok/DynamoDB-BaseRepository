@@ -1,12 +1,11 @@
-﻿using DynamoCode.Domain.Entities;
-
-namespace SampleDynamoDbRepository
+﻿namespace SampleDynamoDbRepository
 {
-    public class Project : Entity<string>
+    public class Project
     {
-        public virtual string Name { get; set; }
+        public string Id { get; set; }
 
-        public virtual string Description { get; set; }
+        public string Name { get; set; }
 
+        public string Description { get; set; }
     }
 }

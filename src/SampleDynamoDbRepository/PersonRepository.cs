@@ -12,6 +12,11 @@ namespace SampleDynamoDbRepository
             SKPrefix = "METADATA";
         }
 
+        protected override int GetEntityKey(Person item)
+        {
+            return item.Id;
+        }
+
         protected override Person FromDynamoDb(Dictionary<string, AttributeValue> item)
         {
             var result = new Person();
@@ -25,17 +30,14 @@ namespace SampleDynamoDbRepository
 
         protected override Dictionary<string, AttributeValue> ToDynamoDb(Person item)
         {
-            var dbItem = new Dictionary<string, AttributeValue>();
-            dbItem.Add(PK, PKAttributeValue(item.Id));
-            dbItem.Add(SK, SKAttributeValue(item.Id));
+            var dbItem = base.ToDynamoDb(item);
 
             dbItem.Add("Id", NumberAttributeValue(item.Id));
             dbItem.Add("Name", StringAttributeValue(item.Name));
             dbItem.Add("FirstName", StringAttributeValue(item.FirstName));
             dbItem.Add("LastName", StringAttributeValue(item.LastName));
             dbItem.Add("Email", StringAttributeValue(item.Email));
-            // for GSI query all 
-            dbItem.Add(GSI1, StringAttributeValue(PKPrefix));
+
             return dbItem;
         }
     }

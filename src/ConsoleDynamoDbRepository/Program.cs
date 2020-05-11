@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading.Tasks;
 using SampleDynamoDbRepository;
 
@@ -14,20 +15,23 @@ namespace ConsoleDynamoDbRepository
 
             // await TestUserRepositoryCRUD();
 
+            // await TestUserRepositoryAddItemsOneByOne();
+
+            // Console.ReadKey();
+
+            // await TestUserRepositoryReadOperations();
+
             // await TestUserRepositoryDeleteItemsOneByOne();
+
+            // await TestUserRepositoryAddBatchItems();
+
+            // Console.ReadKey();
 
             // await TestUserRepositoryReadOperations();
 
             // await TestUserRepositoryDeleteBatchItems();
 
-            // await TestUserRepositoryReadOperations();
 
-            // await TestUserRepositoryAddItemsOneByOne();
-
-            // await TestUserRepositoryAddBatchItems();
-
-
-            
         }
 
         private static async Task TestUserRepositoryDeleteItemsOneByOne()
@@ -37,8 +41,7 @@ namespace ConsoleDynamoDbRepository
             {
                 var uA = new User { Id = "A" + i };
                 Console.WriteLine("* Deleting user A" + i);
-                await repo.DeleteAsync(uA);
-                //Console.WriteLine($"success = {r}");
+                await repo.DeleteItemAsync(uA.Id);
             }
         }
 
@@ -53,7 +56,7 @@ namespace ConsoleDynamoDbRepository
                 Console.WriteLine("* Adding to delete list, user " + uA.Id);
 
             }
-            await repo.DeleteAsync(itemsToDelete);
+            await repo.BatchDeleteItemsAsync(itemsToDelete);
             Console.WriteLine("***** Done deleting all items");
         }
 
@@ -64,8 +67,7 @@ namespace ConsoleDynamoDbRepository
             {
                 var uA = new User { Id = "A" + i, Name = "userA" + i, FirstName = "User" + i, LastName = "A" + i, Email = $"a{i}@test.com" };
                 Console.WriteLine("* Creating user A" + i);
-                await repo.AddAsync(uA);
-                //Console.WriteLine($"success = {r}");
+                await repo.AddItemAsync(uA);
             }
         }
 
@@ -80,7 +82,7 @@ namespace ConsoleDynamoDbRepository
                 Console.WriteLine("* Adding to list user " + uA.Id);
 
             }
-            await repo.AddAsync(itemsToCreate);
+            await repo.BatchAddItemAsync(itemsToCreate);
             Console.WriteLine("***** Done adding all items");
         }
 
@@ -88,17 +90,12 @@ namespace ConsoleDynamoDbRepository
         {
             Console.WriteLine("***** Retrieving all items");
             var repo = new UserRepository(_tableName);
-            var list = await repo.AllAsync();
+            var list = await repo.GetAllAsync();
             foreach (var item in list)
             {
-                Console.WriteLine(item);
+                Console.WriteLine(JsonSerializer.Serialize(item));
             }
-            // Console.WriteLine("***** Retrieving first page of items");
-            // var page = await repo.AllAsync(1, 10);
-            // foreach (var item in page)
-            // {
-            //     Console.WriteLine(item);
-            // }
+
             Console.WriteLine("***** Retrieving total Count");
             Console.WriteLine($"{await repo.CountAsync()}");
         }
@@ -109,13 +106,12 @@ namespace ConsoleDynamoDbRepository
 
             var uA = new User { Id = "A", Name = "userA", FirstName = "User", LastName = "A", Email = "a@test.com" };
             Console.WriteLine("* Creating user A");
-            await repo.AddAsync(uA);
-            // Console.WriteLine($"success = {r}");
+            await repo.AddItemAsync(uA);
 
             Console.WriteLine("* Retrieving user A");
-            var uuA = await repo.FindByAsync("A");
+            var uuA = await repo.GetItemAsync("A");
             if (uuA != null)
-                Console.WriteLine(uuA);
+                Console.WriteLine(JsonSerializer.Serialize(uuA));
             else
                 Console.WriteLine("not found");
 
@@ -127,13 +123,12 @@ namespace ConsoleDynamoDbRepository
             uA.FirstName = "UserUser";
             uA.LastName = "AA AA";
             Console.WriteLine("* Updating user A - renamed to AA");
-            await repo.UpdateAsync(uA);
-            // Console.WriteLine($"success = {rr}");
+            await repo.UpdateItemAsync(uA);
 
             Console.WriteLine("* Retrieving user A after update");
-            var uAUpdated = await repo.FindByAsync("A");
+            var uAUpdated = await repo.GetItemAsync("A");
             if (uAUpdated != null)
-                Console.WriteLine(uAUpdated);
+                Console.WriteLine(JsonSerializer.Serialize(uAUpdated));
             else
                 Console.WriteLine("not found");
 
@@ -141,13 +136,12 @@ namespace ConsoleDynamoDbRepository
 
 
             Console.WriteLine("* Deleting user A");
-            await repo.DeleteAsync("A");
-            //Console.WriteLine($"success = {d}");
+            await repo.DeleteItemAsync("A");
 
             Console.WriteLine("* Retrieving user A after deletion");
-            var deletedA = await repo.FindByAsync("A");
+            var deletedA = await repo.GetItemAsync("A");
             if (deletedA != null)
-                Console.WriteLine(deletedA);
+                Console.WriteLine(JsonSerializer.Serialize(deletedA));
             else
                 Console.WriteLine("not found");
 
@@ -159,13 +153,12 @@ namespace ConsoleDynamoDbRepository
 
             var pA = new Project { Id = "A", Name = "Project A", Description = "Desc proj A" };
             Console.WriteLine("* Creating project A");
-            await repo.AddAsync(pA);
-            //Console.WriteLine($"success = {r}");
+            await repo.AddItemAsync(pA);
 
             Console.WriteLine("* Retrieving project A");
-            var ppA = await repo.FindByAsync("A");
+            var ppA = await repo.GetItemAsync("A");
             if (ppA != null)
-                Console.WriteLine(ppA);
+                Console.WriteLine(JsonSerializer.Serialize(ppA));
             else
                 Console.WriteLine("not found");
 
@@ -175,27 +168,24 @@ namespace ConsoleDynamoDbRepository
             pA.Name = "Project AA";
             pA.Description = "Desc proj AA";
             Console.WriteLine("* Updating project A - renamed to AA");
-            await repo.UpdateAsync(pA);
-            //Console.WriteLine($"success = {rr}");
+            await repo.UpdateItemAsync(pA);
 
             Console.WriteLine("* Retrieving project A after update");
-            var pAUpdated = await repo.FindByAsync("A");
+            var pAUpdated = await repo.GetItemAsync("A");
             if (pAUpdated != null)
-                Console.WriteLine(pAUpdated);
+                Console.WriteLine(JsonSerializer.Serialize(pAUpdated));
             else
                 Console.WriteLine("not found");
 
             Console.ReadKey();
 
-
             Console.WriteLine("* Deleting project A");
-            await repo.DeleteAsync("A");
-            //Console.WriteLine($"success = {d}");
+            await repo.DeleteItemAsync("A");
 
             Console.WriteLine("* Retrieving project A after deletion");
-            var deletedA = await repo.FindByAsync("A");
+            var deletedA = await repo.GetItemAsync("A");
             if (deletedA != null)
-                Console.WriteLine(deletedA);
+                Console.WriteLine(JsonSerializer.Serialize(deletedA));
             else
                 Console.WriteLine("not found");
         }

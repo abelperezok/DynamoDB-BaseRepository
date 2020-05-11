@@ -1,18 +1,18 @@
-using DynamoCode.Domain.Entities;
-
 namespace SampleDynamoDbRepository
 {
-    public class User : Entity<string>
+    public class User
     {
-        public virtual string Name { get; set; }
+        public string Id { get; set; }
 
-        public virtual string FirstName { get; set; }
+        public string Name { get; set; }
 
-        public virtual string LastName { get; set; }
+        public string FirstName { get; set; }
 
-        public virtual string Email { get; set; }
+        public string LastName { get; set; }
 
-        public virtual string CompleteName
+        public string Email { get; set; }
+
+        public string CompleteName
         {
             get
             {

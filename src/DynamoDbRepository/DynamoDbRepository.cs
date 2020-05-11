@@ -3,35 +3,40 @@ using System.Linq;
 using System.Threading.Tasks;
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.Model;
-using DynamoCode.Domain.Data.Interfaces;
-using DynamoCode.Domain.Entities;
 
 namespace DynamoDbRepository
 {
-    public abstract class DynamoDbRepository<TKey, TEntity> : DynamoDbRepositoryBase, IAsyncRepository<TKey, TEntity> 
-        where TEntity : class,IEntityKey<TKey> 
+    public abstract class DynamoDbRepository<TKey, TEntity> : DynamoDbRepositoryBase
+        where TEntity : class
     {
         public DynamoDbRepository(string tableName, string serviceUrl = null) : base(tableName, serviceUrl)
         {
         }
 
-        protected abstract Dictionary<string, AttributeValue> ToDynamoDb(TEntity item);
+        protected abstract TKey GetEntityKey(TEntity item);
+
+        protected virtual Dictionary<string, AttributeValue> ToDynamoDb(TEntity item)
+        {
+            var key = GetEntityKey(item);
+            var dbItem = ToDynamoDbPrimaryKey(key);
+            dbItem.Add(GSI1, StringAttributeValue(PKPrefix));
+            return dbItem;
+        }
 
         protected abstract TEntity FromDynamoDb(Dictionary<string, AttributeValue> item);
 
         protected virtual Dictionary<string, AttributeValue> ToDynamoDbPrimaryKey(TKey id)
         {
             return new Dictionary<string, AttributeValue>
-                {
-                    { PK, PKAttributeValue(id) },
-                    { SK, SKAttributeValue(id) },
-                };
+            {
+                { PK, PKAttributeValue(id) },
+                { SK, SKAttributeValue(id) },
+            };
         }
 
 
-        #region [    IAsyncReadRepository interface    ]
 
-        public async Task<TEntity> FindByAsync(TKey id)
+        public async Task<TEntity> GetItemAsync(TKey id)
         {
             var getitemRq = new GetItemRequest
             {
@@ -47,7 +52,7 @@ namespace DynamoDbRepository
             return default(TEntity);
         }
 
-        public async Task<IList<TEntity>> AllAsync()
+        public async Task<IList<TEntity>> GetAllAsync()
         {
             var queryRq = GetAllQueryGSIRequest();
             var queryResponse = await _dynamoDbClient.QueryAsync(queryRq);
@@ -64,12 +69,10 @@ namespace DynamoDbRepository
             return queryResponse.Count;
         }
 
-        #endregion
 
 
-        #region [    IAsyncWriteRepository interface    ]
 
-        public async Task AddAsync(TEntity item)
+        public async Task AddItemAsync(TEntity item)
         {
             var putItemRq = new PutItemRequest
             {
@@ -81,7 +84,7 @@ namespace DynamoDbRepository
 
         }
 
-        public async Task AddAsync(IEnumerable<TEntity> items)
+        public async Task BatchAddItemAsync(IEnumerable<TEntity> items)
         {
             var requests = new List<WriteRequest>();
             foreach (var item in items)
@@ -95,7 +98,7 @@ namespace DynamoDbRepository
             var result = await _dynamoDbClient.BatchWriteItemAsync(batchRq);
         }
 
-        public async Task UpdateAsync(TEntity item)
+        public async Task UpdateItemAsync(TEntity item)
         {
             var putItemRq = new PutItemRequest
             {
@@ -105,12 +108,8 @@ namespace DynamoDbRepository
             var result = await _dynamoDbClient.PutItemAsync(putItemRq);
         }
 
-        public async Task DeleteAsync(TEntity item)
-        {
-            await DeleteAsync(item.Id);
-        }
 
-        public async Task DeleteAsync(TKey id)
+        public async Task DeleteItemAsync(TKey id)
         {
             var delItemRq = new DeleteItemRequest
             {
@@ -121,12 +120,13 @@ namespace DynamoDbRepository
             //return result.HttpStatusCode == HttpStatusCode.OK;
         }
 
-        public async Task DeleteAsync(IEnumerable<TEntity> items)
+        public async Task BatchDeleteItemsAsync(IEnumerable<TEntity> items)
         {
             var requests = new List<WriteRequest>();
             foreach (var item in items)
             {
-                var deleteRq = new DeleteRequest(ToDynamoDbPrimaryKey(item.Id));
+                var key = GetEntityKey(item);
+                var deleteRq = new DeleteRequest(ToDynamoDbPrimaryKey(key));
                 requests.Add(new WriteRequest(deleteRq));
             }
 
@@ -134,7 +134,5 @@ namespace DynamoDbRepository
 
             var result = await _dynamoDbClient.BatchWriteItemAsync(batchRq);
         }
-
-        #endregion
     }
 }

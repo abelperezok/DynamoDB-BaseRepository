@@ -1,9 +1,9 @@
-using DynamoCode.Domain.Entities;
-
 namespace SampleDynamoDbRepository
 {
-    public class Person : Entity
+    public class Person
     {
+        public int Id { get; set; }
+
         public string Name { get; set; }
 
         public string FirstName { get; set; }

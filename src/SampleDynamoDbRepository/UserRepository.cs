@@ -12,19 +12,21 @@ namespace SampleDynamoDbRepository
             SKPrefix = "METADATA";
         }
 
+        protected override string GetEntityKey(User item)
+        {
+            return item.Id;
+        }
+
         protected override Dictionary<string, AttributeValue> ToDynamoDb(User item)
         {
-            var dbItem = new Dictionary<string, AttributeValue>();
-            dbItem.Add(PK, PKAttributeValue(item.Id));
-            dbItem.Add(SK, SKAttributeValue(item.Id));
-
+            var dbItem = base.ToDynamoDb(item);
+            
             dbItem.Add("Id", StringAttributeValue(item.Id));
             dbItem.Add("Name", StringAttributeValue(item.Name));
             dbItem.Add("FirstName", StringAttributeValue(item.FirstName));
             dbItem.Add("LastName", StringAttributeValue(item.LastName));
             dbItem.Add("Email", StringAttributeValue(item.Email));
-            // for GSI query all 
-            dbItem.Add(GSI1, StringAttributeValue(PKPrefix));
+ 
             return dbItem;
         }
 
