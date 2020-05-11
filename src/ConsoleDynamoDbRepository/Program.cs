@@ -13,23 +13,23 @@ namespace ConsoleDynamoDbRepository
         {
             await TestProjectRepositoryCRUD();
 
-            // await TestUserRepositoryCRUD();
+            await TestUserRepositoryCRUD();
 
-            // await TestUserRepositoryAddItemsOneByOne();
+            await TestUserRepositoryAddItemsOneByOne();
 
-            // Console.ReadKey();
+            Console.ReadKey();
 
-            // await TestUserRepositoryReadOperations();
+            await TestUserRepositoryReadOperations();
 
-            // await TestUserRepositoryDeleteItemsOneByOne();
+            await TestUserRepositoryDeleteItemsOneByOne();
 
-            // await TestUserRepositoryAddBatchItems();
+            await TestUserRepositoryBatchAddItems();
 
-            // Console.ReadKey();
+            Console.ReadKey();
 
-            // await TestUserRepositoryReadOperations();
+            await TestUserRepositoryReadOperations();
 
-            // await TestUserRepositoryDeleteBatchItems();
+            await TestUserRepositoryBatchDeleteItems();
 
 
         }
@@ -45,7 +45,7 @@ namespace ConsoleDynamoDbRepository
             }
         }
 
-        private static async Task TestUserRepositoryDeleteBatchItems()
+        private static async Task TestUserRepositoryBatchDeleteItems()
         {
             var repo = new UserRepository(_tableName);
             var itemsToDelete = new List<User>();
@@ -71,7 +71,7 @@ namespace ConsoleDynamoDbRepository
             }
         }
 
-        private static async Task TestUserRepositoryAddBatchItems()
+        private static async Task TestUserRepositoryBatchAddItems()
         {
             var repo = new UserRepository(_tableName);
             var itemsToCreate = new List<User>();
