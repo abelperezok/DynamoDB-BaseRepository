@@ -17,6 +17,17 @@ namespace SampleDynamoDbRepository
             return item.Id;
         }
 
+        protected override Dictionary<string, AttributeValue> ToDynamoDb(Person item)
+        {
+            var dbItem =  new Dictionary<string, AttributeValue>();            
+            dbItem.Add("Id", NumberAttributeValue(item.Id));
+            dbItem.Add("Name", StringAttributeValue(item.Name));
+            dbItem.Add("FirstName", StringAttributeValue(item.FirstName));
+            dbItem.Add("LastName", StringAttributeValue(item.LastName));
+            dbItem.Add("Email", StringAttributeValue(item.Email));
+            return dbItem;
+        }
+
         protected override Person FromDynamoDb(Dictionary<string, AttributeValue> item)
         {
             var result = new Person();
@@ -26,19 +37,6 @@ namespace SampleDynamoDbRepository
             result.LastName = GetStringAttributeValue("LastName", item);
             result.Email = GetStringAttributeValue("Email", item);
             return result;
-        }
-
-        protected override Dictionary<string, AttributeValue> ToDynamoDb(Person item)
-        {
-            var dbItem = base.ToDynamoDb(item);
-
-            dbItem.Add("Id", NumberAttributeValue(item.Id));
-            dbItem.Add("Name", StringAttributeValue(item.Name));
-            dbItem.Add("FirstName", StringAttributeValue(item.FirstName));
-            dbItem.Add("LastName", StringAttributeValue(item.LastName));
-            dbItem.Add("Email", StringAttributeValue(item.Email));
-
-            return dbItem;
         }
     }
 }

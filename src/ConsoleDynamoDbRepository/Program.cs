@@ -11,27 +11,56 @@ namespace ConsoleDynamoDbRepository
         private static readonly string _tableName = "project-lambda-ItemsTable-97VLHR6QGBU";
         static async Task Main(string[] args)
         {
-            await TestProjectRepositoryCRUD();
+            // await TestProjectRepositoryCRUD();
 
-            await TestUserRepositoryCRUD();
+            // await TestUserRepositoryCRUD();
 
-            await TestUserRepositoryAddItemsOneByOne();
+            // await TestUserRepositoryAddItemsOneByOne();
+
+            // Console.ReadKey();
+
+            // await TestUserRepositoryReadOperations();
+
+            // await TestUserRepositoryDeleteItemsOneByOne();
+
+            // await TestUserRepositoryBatchAddItems();
+
+            // Console.ReadKey();
+
+            // await TestUserRepositoryReadOperations();
+
+            // await TestUserRepositoryBatchDeleteItems();
+
+
+
+
+
+            var userId = "U1";
+            var repo = new GameRepository(_tableName);
+
+            for (int i = 0; i < 5; i++)
+            {
+                var g = new Game { Id = "GA"+i, Name = "Game A"+i };
+                Console.WriteLine($"Adding {g.Id}");
+                await repo.AddGameForUserAsync(userId, g);
+            }
 
             Console.ReadKey();
 
-            await TestUserRepositoryReadOperations();
-
-            await TestUserRepositoryDeleteItemsOneByOne();
-
-            await TestUserRepositoryBatchAddItems();
+            var games = await repo.GetGamesByUserAsync(userId);
+            foreach (var item in games)
+            {
+                Console.WriteLine(JsonSerializer.Serialize(item));
+            }
 
             Console.ReadKey();
 
-            await TestUserRepositoryReadOperations();
-
-            await TestUserRepositoryBatchDeleteItems();
-
-
+            for (int i = 0; i < 5; i++)
+            {
+                var gameId = "GA"+i;
+                Console.WriteLine($"Deleting {gameId}");
+                await repo.DeleteGameFromUserAsync(userId, gameId);
+            }
         }
 
         private static async Task TestUserRepositoryDeleteItemsOneByOne()
@@ -90,7 +119,7 @@ namespace ConsoleDynamoDbRepository
         {
             Console.WriteLine("***** Retrieving all items");
             var repo = new UserRepository(_tableName);
-            var list = await repo.GetAllAsync();
+            var list = await repo.GetAllItemsAsync();
             foreach (var item in list)
             {
                 Console.WriteLine(JsonSerializer.Serialize(item));

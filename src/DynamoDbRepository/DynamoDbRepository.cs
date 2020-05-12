@@ -15,33 +15,47 @@ namespace DynamoDbRepository
 
         protected abstract TKey GetEntityKey(TEntity item);
 
-        protected virtual Dictionary<string, AttributeValue> ToDynamoDb(TEntity item)
-        {
-            var key = GetEntityKey(item);
-            var dbItem = ToDynamoDbPrimaryKey(key);
-            dbItem.Add(GSI1, StringAttributeValue(PKPrefix));
-            return dbItem;
-        }
+        protected abstract Dictionary<string, AttributeValue> ToDynamoDb(TEntity item);
 
         protected abstract TEntity FromDynamoDb(Dictionary<string, AttributeValue> item);
 
-        protected virtual Dictionary<string, AttributeValue> ToDynamoDbPrimaryKey(TKey id)
+        protected virtual Dictionary<string, AttributeValue> ToDynamoDbPrimaryKey(TKey pkId, TKey skId)
         {
+            var pk = (EqualityComparer<TKey>.Default.Equals(pkId, default(TKey))) ? skId : pkId;
             return new Dictionary<string, AttributeValue>
             {
-                { PK, PKAttributeValue(id) },
-                { SK, SKAttributeValue(id) },
+                { PK, PKAttributeValue(pk) },
+                { SK, SKAttributeValue(skId) },
             };
         }
+        protected virtual Dictionary<string, AttributeValue> ToDynamoDbFullItem(TKey pkId, TEntity item)
+        {
+            var skId = GetEntityKey(item);
 
+            var dbItemBase = ToDynamoDbPrimaryKey(pkId, skId);
+
+            var dbItemData = ToDynamoDb(item);
+
+            if ((EqualityComparer<TKey>.Default.Equals(pkId, default(TKey))))
+            {
+                dbItemBase.Add(GSI1, StringAttributeValue(PKPrefix));
+            }
+
+            return dbItemBase.Union(dbItemData).ToDictionary(k => k.Key, v => v.Value);
+        }
 
 
         public async Task<TEntity> GetItemAsync(TKey id)
         {
+            return await GetItemAsync(id, id);
+        }
+
+        public async Task<TEntity> GetItemAsync(TKey pkId, TKey skId)
+        {
             var getitemRq = new GetItemRequest
             {
                 TableName = _tableName,
-                Key = ToDynamoDbPrimaryKey(id)
+                Key = ToDynamoDbPrimaryKey(pkId, skId)
             };
             var getitemResponse = await _dynamoDbClient.GetItemAsync(getitemRq);
             var result = getitemResponse.Item;
@@ -52,7 +66,15 @@ namespace DynamoDbRepository
             return default(TEntity);
         }
 
-        public async Task<IList<TEntity>> GetAllAsync()
+        public async Task<IList<TEntity>> GetItemsByParentIdAsync(TKey pkId)
+        {
+            var queryRq = GetItemsByParentIdQueryTableRequest(pkId);
+            var queryResponse = await _dynamoDbClient.QueryAsync(queryRq);
+            var result = queryResponse.Items;
+            return result.Select(FromDynamoDb).ToList();
+        }
+
+        public async Task<IList<TEntity>> GetAllItemsAsync()
         {
             var queryRq = GetAllQueryGSIRequest();
             var queryResponse = await _dynamoDbClient.QueryAsync(queryRq);
@@ -71,14 +93,19 @@ namespace DynamoDbRepository
 
 
 
-
         public async Task AddItemAsync(TEntity item)
+        {
+            await AddItemAsync(default(TKey), item);
+        }
+
+        public async Task AddItemAsync(TKey pkId, TEntity item)
         {
             var putItemRq = new PutItemRequest
             {
                 TableName = _tableName,
-                Item = ToDynamoDb(item)
+                Item = ToDynamoDbFullItem(pkId, item)
             };
+
             var result = await _dynamoDbClient.PutItemAsync(putItemRq);
             //return result.HttpStatusCode == HttpStatusCode.OK;
 
@@ -86,10 +113,15 @@ namespace DynamoDbRepository
 
         public async Task BatchAddItemAsync(IEnumerable<TEntity> items)
         {
+            await BatchAddItemAsync(default(TKey), items);
+        }
+
+        public async Task BatchAddItemAsync(TKey pkId, IEnumerable<TEntity> items)
+        {
             var requests = new List<WriteRequest>();
             foreach (var item in items)
             {
-                var putRq = new PutRequest(ToDynamoDb(item));
+                var putRq = new PutRequest(ToDynamoDbFullItem(pkId, item));
                 requests.Add(new WriteRequest(putRq));
             }
 
@@ -100,21 +132,30 @@ namespace DynamoDbRepository
 
         public async Task UpdateItemAsync(TEntity item)
         {
+            await UpdateItemAsync(default(TKey), item);
+        }
+
+        public async Task UpdateItemAsync(TKey pkId, TEntity item)
+        {
             var putItemRq = new PutItemRequest
             {
                 TableName = _tableName,
-                Item = ToDynamoDb(item)
+                Item = ToDynamoDbFullItem(pkId, item)
             };
             var result = await _dynamoDbClient.PutItemAsync(putItemRq);
         }
 
-
         public async Task DeleteItemAsync(TKey id)
+        {
+            await DeleteItemAsync(id, id);
+        }
+
+        public async Task DeleteItemAsync(TKey pkId, TKey skId)
         {
             var delItemRq = new DeleteItemRequest
             {
                 TableName = _tableName,
-                Key = ToDynamoDbPrimaryKey(id)
+                Key = ToDynamoDbPrimaryKey(pkId, skId)
             };
             var result = await _dynamoDbClient.DeleteItemAsync(delItemRq);
             //return result.HttpStatusCode == HttpStatusCode.OK;
@@ -122,11 +163,16 @@ namespace DynamoDbRepository
 
         public async Task BatchDeleteItemsAsync(IEnumerable<TEntity> items)
         {
+            await BatchDeleteItemsAsync(default(TKey), items);
+        }
+
+        public async Task BatchDeleteItemsAsync(TKey pkId, IEnumerable<TEntity> items)
+        {
             var requests = new List<WriteRequest>();
             foreach (var item in items)
             {
-                var key = GetEntityKey(item);
-                var deleteRq = new DeleteRequest(ToDynamoDbPrimaryKey(key));
+                var skId = GetEntityKey(item);
+                var deleteRq = new DeleteRequest(ToDynamoDbPrimaryKey(pkId, skId));
                 requests.Add(new WriteRequest(deleteRq));
             }
 

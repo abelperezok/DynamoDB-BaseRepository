@@ -56,6 +56,20 @@ namespace DynamoDbRepository
             };
         }
 
+        protected QueryRequest GetItemsByParentIdQueryTableRequest(object pkId)
+        {
+            return new QueryRequest
+            {
+                TableName = _tableName,
+                KeyConditionExpression = $"{PK} = :pk_id and begins_with({SK}, :sk_prefix)",
+                ExpressionAttributeValues = new Dictionary<string, AttributeValue> 
+                { 
+                    { ":pk_id", PKAttributeValue(pkId) },
+                    { ":sk_prefix", StringAttributeValue(SKPrefix) } 
+                }
+            };
+        }
+
         protected AttributeValue PKAttributeValue(object id)
         {
             return new AttributeValue(PKPrefix + Separator + Convert.ToString(id));

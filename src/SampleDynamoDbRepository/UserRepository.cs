@@ -19,14 +19,12 @@ namespace SampleDynamoDbRepository
 
         protected override Dictionary<string, AttributeValue> ToDynamoDb(User item)
         {
-            var dbItem = base.ToDynamoDb(item);
-            
+            var dbItem =  new Dictionary<string, AttributeValue>();            
             dbItem.Add("Id", StringAttributeValue(item.Id));
             dbItem.Add("Name", StringAttributeValue(item.Name));
             dbItem.Add("FirstName", StringAttributeValue(item.FirstName));
             dbItem.Add("LastName", StringAttributeValue(item.LastName));
-            dbItem.Add("Email", StringAttributeValue(item.Email));
- 
+            dbItem.Add("Email", StringAttributeValue(item.Email)); 
             return dbItem;
         }
 
