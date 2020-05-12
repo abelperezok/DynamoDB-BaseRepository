@@ -2,6 +2,17 @@
 
 C# .NET Core implementation of the repository pattern using DynamoDB as data store using hierarchical data.
 
+## Content
+
+[Data model assumptions](#data-model-assumptions)
+
+[Usage](#usage)
+
+[Example: CRUD operations](#example-crud-operations)
+
+[Example: Batch operations](#example-batch-operations)
+
+
 ## Data model assumptions
 
 When trying to generalize a concept, there has to be some assumptions. In this case, the table structure follows the general ideas about hierarchical data overloading the partition and sort keys as well as the GSI.
@@ -24,7 +35,8 @@ USER#U2 | METADATA#U2 | USER | U2 | Nestor
 PROJECT#P1 | METADATA#P1 | PROJECT | P1 | Project 1 | desc project 1
 PROJECT#P2 | METADATA#P2 | PROJECT | P2 | Project 2 | desc project 2
 PROJECT#P3 | METADATA#P3 | PROJECT | P3 | Project 3 | desc project 3
-
+USER#U1  | GAME#G1 | GAME | G1 | Game 1 |
+USER#U1  | GAME#G2 | GAME | G2 | Game 2 |
 
 ### GSI with sample data
 
@@ -36,15 +48,20 @@ PROJECT | METADATA#P1 | P1 | Project 1 | desc project 1
 PROJECT | METADATA#P2 | P2 | Project 2 | desc project 2
 PROJECT | METADATA#P3 | P3 | Project 3 | desc project 3
 
+
 ### Queries
 
 * Single item given the ID: Table PK = ENTITY#ID, SK = METADATA#ID
   * Get User U1: Table PK = USER#U1, SK = METADATA#U1
   * Get Project P1: Table PK = PROJECT#P1, SK = METADATA#P1
+  * Get Game G1 for User U1: Table PK = USER#U1, SK = GAME#G1
 
 * Multiple items per type: GSI PK = ENTITY
   * Get all users: GSI PK = USER
   * Get all projects: GSI PK = PROJECT
+
+* Multiple items per parent instance: Table PK = PARENT_ENTITY#ID, SK = ENTITY#ID
+  * Get all games by user U1 : Table PK = USER#U1, SK begins_with GAME
 
 ## Usage
 
@@ -86,7 +103,7 @@ Override **GetEntityKey** abstract method, this method should return the Identit
     }
 ```
 
-Override **ToDynamoDb** virtual method, this method should transform an instance of the entity into a DynamoDB attribute dictionary. A base implementation is provided which deals with the PK, SK and GSI attributes. So your only responsibility is to map the actual data attributes. 
+Override **ToDynamoDb** abstract method, this method should transform an instance of the entity into a DynamoDB attribute dictionary. The calling methods  deal with the PK, SK and GSI attributes. So your only responsibility is to map the actual data attributes. 
 
 Some helper methods are provided to reduce the boilerplate code:
 
@@ -98,14 +115,12 @@ Example of typical ```ToDynamoDb``` implementation:
 ```cs
     protected override Dictionary<string, AttributeValue> ToDynamoDb(User item)
     {
-        var dbItem = base.ToDynamoDb(item);
-        
+        var dbItem = new Dictionary<string, AttributeValue>();        
         dbItem.Add("Id", StringAttributeValue(item.Id));
         dbItem.Add("Name", StringAttributeValue(item.Name));
         dbItem.Add("FirstName", StringAttributeValue(item.FirstName));
         dbItem.Add("LastName", StringAttributeValue(item.LastName));
         dbItem.Add("Email", StringAttributeValue(item.Email));
-
         return dbItem;
     }
 ```
