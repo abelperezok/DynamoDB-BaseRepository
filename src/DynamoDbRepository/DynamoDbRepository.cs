@@ -28,6 +28,7 @@ namespace DynamoDbRepository
                 { SK, SKAttributeValue(skId) },
             };
         }
+        
         protected virtual Dictionary<string, AttributeValue> ToDynamoDbFullItem(TKey pkId, TEntity item)
         {
             var skId = GetEntityKey(item);

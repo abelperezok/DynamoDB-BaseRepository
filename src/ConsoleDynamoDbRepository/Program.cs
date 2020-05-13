@@ -13,7 +13,7 @@ namespace ConsoleDynamoDbRepository
         {
             // await TestProjectRepositoryCRUD();
 
-            // await TestUserRepositoryCRUD();
+            await TestUserRepositoryCRUD();
 
             // await TestUserRepositoryAddItemsOneByOne();
 
@@ -31,16 +31,17 @@ namespace ConsoleDynamoDbRepository
 
             // await TestUserRepositoryBatchDeleteItems();
 
+            // await TestGameRepositorySpecificOperations();
+        }
 
-
-
-
+        private static async Task TestGameRepositorySpecificOperations()
+        {
             var userId = "U1";
             var repo = new GameRepository(_tableName);
 
             for (int i = 0; i < 5; i++)
             {
-                var g = new Game { Id = "GA"+i, Name = "Game A"+i };
+                var g = new Game { Id = "GA" + i, Name = "Game A" + i };
                 Console.WriteLine($"Adding {g.Id}");
                 await repo.AddGameForUserAsync(userId, g);
             }
@@ -57,7 +58,7 @@ namespace ConsoleDynamoDbRepository
 
             for (int i = 0; i < 5; i++)
             {
-                var gameId = "GA"+i;
+                var gameId = "GA" + i;
                 Console.WriteLine($"Deleting {gameId}");
                 await repo.DeleteGameFromUserAsync(userId, gameId);
             }
@@ -133,6 +134,7 @@ namespace ConsoleDynamoDbRepository
         {
             var repo = new UserRepository(_tableName);
 
+
             var uA = new User { Id = "A", Name = "userA", FirstName = "User", LastName = "A", Email = "a@test.com" };
             Console.WriteLine("* Creating user A");
             await repo.AddItemAsync(uA);
@@ -146,6 +148,12 @@ namespace ConsoleDynamoDbRepository
 
             Console.ReadKey();
 
+            Console.WriteLine("Listing all users");
+            var users = await repo.GetAllItemsAsync();
+            foreach (var item in users)
+            {
+                Console.WriteLine(JsonSerializer.Serialize(item));
+            }
 
             uA.Name = "userAA";
             uA.Email = "aa-aa@test.com";
