@@ -14,7 +14,7 @@
     }
     ```
 
-* ```Dictionary<string, AttributeValue> ToDynamoDb(TEntity item)```  This method should transform an instance of the entity into a DynamoDB attribute dictionary. The calling methods will deal with the PK, SK and GSI attributes. So your only responsibility is to map the actual data attributes.
+* ```Dictionary<string, AttributeValue> ToDynamoDb(TEntity item)``` This method should transform an instance of the entity into a DynamoDB attribute dictionary. The calling methods will deal with the PK, SK and GSI attributes. So your only responsibility is to map the actual data attributes.
 
     Some helper methods are provided to reduce the boilerplate code:
 

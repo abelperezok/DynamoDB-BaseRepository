@@ -26,7 +26,7 @@ Key features:
 
 ## Quick usage guide
 
-1. Define your entity as a POCO, No interface or annotations.
+1. Define your entity as a POCO, no interface or annotations required.
 
 ```cs
     public class User
@@ -55,7 +55,7 @@ Key features:
     }
 ```
 
-4. Override **GetEntityKey** abstract method to return the entity identifier.
+4. Override ```TKey GetEntityKey(TEntity item)``` abstract method to return the entity identifier.
 
 ```cs
     protected override string GetEntityKey(User item)
@@ -64,7 +64,7 @@ Key features:
     }
 ```
 
-5. Override **ToDynamoDb** abstract method to map the entity object to DynamoDB attribute dictionary.
+5. Override ```Dictionary<string, AttributeValue> ToDynamoDb(TEntity item)``` abstract method to map the entity object to a DynamoDB attribute dictionary.
 
 ```cs
     protected override Dictionary<string, AttributeValue> ToDynamoDb(User item)
@@ -76,7 +76,7 @@ Key features:
     }
 ```
 
-1. Override **FromDynamoDb** abstract method to map the DynamoDB attribute dictionary to entity object.
+1. Override ```TEntity FromDynamoDb(Dictionary<string, AttributeValue> item)``` abstract method to map the DynamoDB attribute dictionary to an entity object.
 
 ```cs
     protected override User FromDynamoDb(Dictionary<string, AttributeValue> item)
