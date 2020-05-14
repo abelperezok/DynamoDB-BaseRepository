@@ -39,6 +39,12 @@ Key features:
 
 2. Inherit from ```DynamoDbRepository<TKey, TEntity>``` abstract class.
 
+```cs
+    public class UserRepository : DynamoDbRepository<string, User>
+    {
+    }
+```
+
 3. Define partition key prefix and sort key prefix in constructor.
  
 ```cs
@@ -49,7 +55,7 @@ Key features:
     }
 ```
 
-4. Override **GetEntityKey** abstract method.
+4. Override **GetEntityKey** abstract method to return the entity identifier.
 
 ```cs
     protected override string GetEntityKey(User item)
@@ -58,7 +64,7 @@ Key features:
     }
 ```
 
-5. Override **ToDynamoDb** abstract method.
+5. Override **ToDynamoDb** abstract method to map the entity object to DynamoDB attribute dictionary.
 
 ```cs
     protected override Dictionary<string, AttributeValue> ToDynamoDb(User item)
@@ -70,7 +76,7 @@ Key features:
     }
 ```
 
-6. Override **FromDynamoDb** abstract method.
+1. Override **FromDynamoDb** abstract method to map the DynamoDB attribute dictionary to entity object.
 
 ```cs
     protected override User FromDynamoDb(Dictionary<string, AttributeValue> item)
