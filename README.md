@@ -18,6 +18,8 @@ Key features:
 
 [Usage - Single entities](docs/usage-single-entities.md)
 
+[Usage - One to many relationship](docs/usage-one-to-many.md)
+
 [Methods reference](docs/methods-reference.md)
 
 [Example: CRUD operations](docs/example-crud-operations.md)
