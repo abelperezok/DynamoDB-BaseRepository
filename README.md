@@ -1,5 +1,7 @@
 # DynamoDB base repository
 
+![.NET Core Github Actions badge](https://github.com/abelperezok/DynamoDB-BaseRepository/workflows/.NET%20Core/badge.svg)
+
 C# .NET Core implementation of the repository pattern using DynamoDB as data store using hierarchical data modelling strategy overloading the partition and sort key as well secondary index.
 
 This implementation aims to solve the most common data persistence use cases ranging from single entities to more complex data models.
