@@ -27,5 +27,5 @@ jobs:
       run: dotnet build
       working-directory: test/DynamoDbRepository.Tests
     - name: Test
-      run: AWS_ACCESS_KEY_ID=abc AWS_SECRET_ACCESS_KEY=xyz dotnet test --no-restore --verbosity normal
+      run: AWS_ACCESS_KEY_ID=abc AWS_SECRET_ACCESS_KEY=xyz dotnet test --no-build --verbosity normal
       working-directory: test/DynamoDbRepository.Tests
