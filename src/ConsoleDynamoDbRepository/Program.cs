@@ -13,7 +13,7 @@ namespace ConsoleDynamoDbRepository
         {
             // await TestProjectRepositoryCRUD();
 
-            await TestUserRepositoryCRUD();
+            // await TestUserRepositoryCRUD();
 
             // await TestUserRepositoryAddItemsOneByOne();
 
@@ -32,6 +32,65 @@ namespace ConsoleDynamoDbRepository
             // await TestUserRepositoryBatchDeleteItems();
 
             // await TestGameRepositorySpecificOperations();
+
+
+            await TestUserProjectRepositoryManyToMany();
+        }
+
+        private static async Task TestUserProjectRepositoryManyToMany()
+        {
+            var userRepo = new UserRepository(_tableName);
+
+            var u1 = new User { Id = "U1", Name = "User 1", FirstName = "User", LastName = "A", Email = "a@test.com" };
+            await userRepo.AddItemAsync(u1);
+
+
+            var repo = new UserProjectRepository(_tableName);
+
+            var u1p1 = new UserProject { UserId = "U1", ProjectId = "P1", Role = "owner" };
+            await repo.AddItemAsync(u1p1);
+            var u1p2 = new UserProject { UserId = "U1", ProjectId = "P2", Role = "member" };
+            await repo.AddItemAsync(u1p2);
+
+            Console.WriteLine("Getting projects by UserProject - should be empty");
+            var allUP = await repo.GetAllItemsAsync();
+            foreach (var item in allUP)
+            {
+                Console.WriteLine(JsonSerializer.Serialize(item));
+            }
+
+            Console.WriteLine("Getting projects by user U1");
+            var allUPU1 = await repo.GetTableItemsByParentIdAsync("U1");
+            foreach (var item in allUPU1)
+            {
+                Console.WriteLine(JsonSerializer.Serialize(item));
+            }
+
+
+            Console.WriteLine("Getting users by project P1");
+            var usersP1 = await repo.GetUserProjectByProjectAsync("P1");
+            foreach (var item in usersP1)
+            {
+                Console.WriteLine(JsonSerializer.Serialize(item));
+            }
+            Console.WriteLine("Getting users by project P2");
+            var usersP2 = await repo.GetUserProjectByProjectAsync("P2");
+            foreach (var item in usersP2)
+            {
+                Console.WriteLine(JsonSerializer.Serialize(item));
+            }
+
+
+            Console.WriteLine("Deleting projects P1 and P2 for user U1");
+            await repo.DeleteProjectFromUserAsync(u1p1.UserId, u1p1.ProjectId);
+            await repo.DeleteProjectFromUserAsync(u1p2.UserId, u1p2.ProjectId);
+
+            Console.WriteLine("Getting projects by user U1 - should be empty");
+            var deletedUPU1 = await repo.GetTableItemsByParentIdAsync("U1");
+            foreach (var item in deletedUPU1)
+            {
+                Console.WriteLine(JsonSerializer.Serialize(item));
+            }
         }
 
         private static async Task TestGameRepositorySpecificOperations()

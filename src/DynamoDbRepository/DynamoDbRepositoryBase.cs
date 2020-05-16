@@ -15,6 +15,7 @@ namespace DynamoDbRepository
         protected readonly string GSI1 = "GSI1";
         protected string PKPrefix = "";
         protected string SKPrefix = "";
+        protected string GSIPrefix = "";
 
         public DynamoDbRepositoryBase(string tableName, string serviceUrl = null)
         {
@@ -27,7 +28,7 @@ namespace DynamoDbRepository
             else
             {
                 _dynamoDbClient = new AmazonDynamoDBClient();
-            }            
+            }
         }
 
         protected string GetStringAttributeValue(string key, Dictionary<string, AttributeValue> item)
@@ -45,14 +46,18 @@ namespace DynamoDbRepository
             return Convert.ToDouble(item.GetValueOrDefault(key)?.N);
         }
 
-        protected QueryRequest GetAllQueryGSIRequest()
+        protected QueryRequest GetAllQueryGSI1Request()
         {
             return new QueryRequest
             {
                 TableName = _tableName,
                 IndexName = GSI1,
-                KeyConditionExpression = $"{GSI1} = :pk_prefix",
-                ExpressionAttributeValues = new Dictionary<string, AttributeValue> { { ":pk_prefix", new AttributeValue(PKPrefix) } }
+                KeyConditionExpression = $"{GSI1} = :pk_prefix and begins_with({SK}, :sk_prefix)",
+                ExpressionAttributeValues = new Dictionary<string, AttributeValue>
+                {
+                    { ":pk_prefix", new AttributeValue(PKPrefix) },
+                    { ":sk_prefix", new AttributeValue(SKPrefix) }
+                }
             };
         }
 
@@ -62,11 +67,23 @@ namespace DynamoDbRepository
             {
                 TableName = _tableName,
                 KeyConditionExpression = $"{PK} = :pk_id and begins_with({SK}, :sk_prefix)",
-                ExpressionAttributeValues = new Dictionary<string, AttributeValue> 
-                { 
+                ExpressionAttributeValues = new Dictionary<string, AttributeValue>
+                {
                     { ":pk_id", PKAttributeValue(pkId) },
-                    { ":sk_prefix", StringAttributeValue(SKPrefix) } 
+                    { ":sk_prefix", StringAttributeValue(SKPrefix) }
                 }
+            };
+        }
+
+        
+        protected QueryRequest GetItemsByParentIdQueryGSI1Request(object gsi1Id)
+        {
+            return new QueryRequest
+            {
+                TableName = _tableName,
+                IndexName = GSI1,
+                KeyConditionExpression = $"{GSI1} = :gsi_value",
+                ExpressionAttributeValues = new Dictionary<string, AttributeValue> { { ":gsi_value", GSI1AttributeValue(gsi1Id) } }
             };
         }
 
@@ -78,6 +95,11 @@ namespace DynamoDbRepository
         protected AttributeValue SKAttributeValue(object id)
         {
             return new AttributeValue(SKPrefix + Separator + Convert.ToString(id));
+        }
+
+        protected AttributeValue GSI1AttributeValue(object id)
+        {
+            return new AttributeValue(GSIPrefix + Separator + Convert.ToString(id));
         }
 
         protected AttributeValue StringAttributeValue(string value)

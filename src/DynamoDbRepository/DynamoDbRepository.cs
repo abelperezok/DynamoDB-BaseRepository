@@ -15,6 +15,11 @@ namespace DynamoDbRepository
 
         protected abstract TKey GetEntityKey(TEntity item);
 
+        protected virtual TKey GetEntitySortKey(TEntity item)
+        {
+            return GetEntityKey(item);
+        }
+
         protected abstract Dictionary<string, AttributeValue> ToDynamoDb(TEntity item);
 
         protected abstract TEntity FromDynamoDb(Dictionary<string, AttributeValue> item);
@@ -28,18 +33,38 @@ namespace DynamoDbRepository
                 { SK, SKAttributeValue(skId) },
             };
         }
-        
         protected virtual Dictionary<string, AttributeValue> ToDynamoDbFullItem(TKey pkId, TEntity item)
         {
-            var skId = GetEntityKey(item);
+            TKey pk, sk;
+            var entityPK = GetEntityKey(item);
+            var entitySK = GetEntitySortKey(item);
 
-            var dbItemBase = ToDynamoDbPrimaryKey(pkId, skId);
+            if (EqualityComparer<TKey>.Default.Equals(pkId, default(TKey)))
+            {
+                // if pkId is empty (single entity or ONE)
+                //    => get the PK from the entity
+                //    => get the SK from the entity
+                pk = entityPK;
+                sk = entitySK;
+            }
+            else
+            {
+                // if there is any value in pkId (MANY part in 1-*)
+                //    => get the PK from pkId
+                //    => get the SK from the entity PK 
+                pk = pkId;
+                sk = entityPK;
+            }
+
+            var dbItemBase = ToDynamoDbPrimaryKey(pk, sk);
 
             var dbItemData = ToDynamoDb(item);
 
+            // only set GSI1 to the PK prefix if it's a single or ONE entity
             if ((EqualityComparer<TKey>.Default.Equals(pkId, default(TKey))))
             {
-                dbItemBase.Add(GSI1, StringAttributeValue(PKPrefix));
+                if (!dbItemData.ContainsKey(GSI1))
+                    dbItemData.Add(GSI1, StringAttributeValue(PKPrefix));
             }
 
             return dbItemBase.Union(dbItemData).ToDictionary(k => k.Key, v => v.Value);
@@ -67,7 +92,7 @@ namespace DynamoDbRepository
             return default(TEntity);
         }
 
-        public async Task<IList<TEntity>> GetItemsByParentIdAsync(TKey pkId)
+        public async Task<IList<TEntity>> GetTableItemsByParentIdAsync(TKey pkId)
         {
             var queryRq = GetItemsByParentIdQueryTableRequest(pkId);
             var queryResponse = await _dynamoDbClient.QueryAsync(queryRq);
@@ -75,9 +100,18 @@ namespace DynamoDbRepository
             return result.Select(FromDynamoDb).ToList();
         }
 
+        public async Task<IList<TEntity>> GetGSI1ItemsByParentIdAsync(TKey parentId)
+        {
+            QueryRequest queryRq = GetItemsByParentIdQueryGSI1Request(parentId);
+
+            var queryResponse = await _dynamoDbClient.QueryAsync(queryRq);
+            var result = queryResponse.Items;
+            return result.Select(FromDynamoDb).ToList();
+        }
+
         public async Task<IList<TEntity>> GetAllItemsAsync()
         {
-            var queryRq = GetAllQueryGSIRequest();
+            var queryRq = GetAllQueryGSI1Request();
             var queryResponse = await _dynamoDbClient.QueryAsync(queryRq);
             var result = queryResponse.Items;
             return result.Select(FromDynamoDb).ToList();
@@ -85,7 +119,7 @@ namespace DynamoDbRepository
 
         public async Task<int> CountAsync()
         {
-            var queryRq = GetAllQueryGSIRequest();
+            var queryRq = GetAllQueryGSI1Request();
             queryRq.Select = Select.COUNT;
 
             var queryResponse = await _dynamoDbClient.QueryAsync(queryRq);

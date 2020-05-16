@@ -37,7 +37,7 @@ namespace SampleDynamoDbRepository
 
         public async Task<IList<Game>> GetGamesByUserAsync(string userId)
         {
-            return await GetItemsByParentIdAsync(userId);
+            return await GetTableItemsByParentIdAsync(userId);
         }
 
         public async Task AddGameForUserAsync(string userId, Game item)
