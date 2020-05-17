@@ -19,8 +19,8 @@ USER#U2 | METADATA#U2 | USER | U2 | Nestor
 PROJECT#P1 | METADATA#P1 | PROJECT | P1 | Project 1 | desc project 1
 PROJECT#P2 | METADATA#P2 | PROJECT | P2 | Project 2 | desc project 2
 PROJECT#P3 | METADATA#P3 | PROJECT | P3 | Project 3 | desc project 3
-USER#U1  | GAME#G1 | GAME | G1 | Game 1 |
-USER#U1  | GAME#G2 | GAME | G2 | Game 2 |
+USER#U1  | GAME#G1 | | G1 | Game 1 |
+USER#U1  | GAME#G2 | | G2 | Game 2 |
 
 ## GSI with sample data
 
