@@ -20,26 +20,26 @@ namespace DynamoDbRepository.Tests
         [Fact]
         public async void TestUserRepository()
         {
-            var repo = new UserRepository(_tableName, _serviceUrl);
+            IUserRepository repo = new UserRepository(_tableName, _serviceUrl);
 
-            var list = await repo.GetAllItemsAsync();
+            var list = await repo.GetUserList();
             Assert.Equal(0, list.Count);
 
-
-            var count = await repo.CountAsync();
-            Assert.Equal(0, count);
-
-
             var item = new User { Id = "User0001", Name = "userA", FirstName = "User", LastName = "A", Email = "a@test.com" };
-            await repo.AddItemAsync(item);
+            await repo.AddUser(item);
 
-            list = await repo.GetAllItemsAsync();
+            list = await repo.GetUserList();
             Assert.Equal(1, list.Count);
 
-            count = await repo.CountAsync();
-            Assert.Equal(1, count);
+            var item0 = list[0];
+            Assert.NotNull(item0);
+            Assert.Equal("User0001", item0.Id);
+            Assert.Equal("userA", item0.Name);
+            Assert.Equal("User", item0.FirstName);
+            Assert.Equal("A", item0.LastName);
+            Assert.Equal("a@test.com", item0.Email);
 
-            var found = await repo.GetItemAsync("User0001");
+            var found = await repo.GetUser("User0001");
             Assert.NotNull(found);
             Assert.Equal("User0001", found.Id);
             Assert.Equal("userA", found.Name);
@@ -52,9 +52,9 @@ namespace DynamoDbRepository.Tests
             found.Email = "aa-aa@test.com";
             found.FirstName = "UserUser";
             found.LastName = "AA AA";
-            await repo.UpdateItemAsync(found);
+            await repo.UpdateUser(found);
 
-            var updated = await repo.GetItemAsync("User0001");
+            var updated = await repo.GetUser("User0001");
             Assert.NotNull(updated);
             Assert.Equal("User0001", updated.Id);
             Assert.Equal("userAA", updated.Name);
@@ -62,40 +62,35 @@ namespace DynamoDbRepository.Tests
             Assert.Equal("AA AA", updated.LastName);
             Assert.Equal("aa-aa@test.com", updated.Email);
 
-            await repo.DeleteItemAsync("User0001");
-            var deleted = await repo.GetItemAsync("User0001");
+            await repo.DeleteUser("User0001");
+            var deleted = await repo.GetUser("User0001");
             Assert.Null(deleted);
 
-            var emptyList = await repo.GetAllItemsAsync();
+            var emptyList = await repo.GetUserList();
             Assert.Equal(0, emptyList.Count);
-
-            var emptyCount = await repo.CountAsync();
-            Assert.Equal(0, emptyCount);
         }
 
         [Fact]
         public async void TestProjectRepository()
         {
-            var repo = new ProjectRepository(_tableName, _serviceUrl);
+            IProjectRepository repo = new ProjectRepository(_tableName, _serviceUrl);
 
-            var list = await repo.GetAllItemsAsync();
+            var list = await repo.GetProjectList();
             Assert.Equal(0, list.Count);
 
-
-            var count = await repo.CountAsync();
-            Assert.Equal(0, count);
-
-
             var item = new Project { Id = "Project0001", Name = "ProjectA", Description = "Project A" };
-            await repo.AddItemAsync(item);
+            await repo.AddProject(item);
 
-            list = await repo.GetAllItemsAsync();
+            list = await repo.GetProjectList();
             Assert.Equal(1, list.Count);
 
-            count = await repo.CountAsync();
-            Assert.Equal(1, count);
+            var item0 = list[0];
+            Assert.NotNull(item0);
+            Assert.Equal("Project0001", item0.Id);
+            Assert.Equal("ProjectA", item0.Name);
+            Assert.Equal("Project A", item0.Description);
 
-            var found = await repo.GetItemAsync("Project0001");
+            var found = await repo.GetProject("Project0001");
             Assert.NotNull(found);
             Assert.Equal("Project0001", found.Id);
             Assert.Equal("ProjectA", found.Name);
@@ -103,17 +98,17 @@ namespace DynamoDbRepository.Tests
 
             found.Name = "ProjectAA";
             found.Description = "Project AA";
-            await repo.UpdateItemAsync(found);
+            await repo.UpdateProject(found);
 
-            var updated = await repo.GetItemAsync("Project0001");
+            var updated = await repo.GetProject("Project0001");
             Assert.NotNull(updated);
             Assert.Equal("Project0001", updated.Id);
             Assert.Equal("ProjectAA", updated.Name);
             Assert.Equal("Project AA", updated.Description);
 
 
-            await repo.DeleteItemAsync("Project0001");
-            var deleted = await repo.GetItemAsync("Project0001");
+            await repo.DeleteProject("Project0001");
+            var deleted = await repo.GetProject("Project0001");
             Assert.Null(deleted);
 
         }
@@ -121,77 +116,90 @@ namespace DynamoDbRepository.Tests
         [Fact]
         public async void TestPersonRepository()
         {
-            var repo = new PersonRepository(_tableName, _serviceUrl);
+            ISimpleRepository<int, Person> repo = new PersonRepository(_tableName, _serviceUrl);
 
-            var list = await repo.GetAllItemsAsync();
+            var list = await repo.GetList();
             Assert.Equal(0, list.Count);
 
+            var item = new Person { Id = 1, Name = "personA", Email = "pa@test.com", Age = 35 };
+            await repo.Add(item);
 
-            var count = await repo.CountAsync();
-            Assert.Equal(0, count);
-
-
-            var item = new Person { Id = 1, Name = "personA", FirstName = "Person", LastName = "A", Email = "pa@test.com", };
-            await repo.AddItemAsync(item);
-
-            list = await repo.GetAllItemsAsync();
+            list = await repo.GetList();
             Assert.Equal(1, list.Count);
 
-            count = await repo.CountAsync();
-            Assert.Equal(1, count);
+            var item0 = list[0];
+            Assert.NotNull(item0);
+            Assert.Equal(1, item0.Id);
+            Assert.Equal("personA", item0.Name);
+            Assert.Equal("pa@test.com", item0.Email);
+            Assert.Equal(35, item0.Age);
 
-            var found = await repo.GetItemAsync(1);
+            var found = await repo.Get(1);
             Assert.NotNull(found);
             Assert.Equal(1, found.Id);
             Assert.Equal("personA", found.Name);
-            Assert.Equal("Person", found.FirstName);
-            Assert.Equal("A", found.LastName);
             Assert.Equal("pa@test.com", found.Email);
-
+            Assert.Equal(35, found.Age);
 
             found.Name = "personAA";
-            found.FirstName = "PersonPerson";
-            found.LastName = "AA AA";
             found.Email = "aa-aa@test.com";
-            await repo.UpdateItemAsync(found);
+            found.Age = 36;
+            await repo.Update(found);
 
-            var updated = await repo.GetItemAsync(1);
+            var updated = await repo.Get(1);
             Assert.NotNull(updated);
             Assert.Equal(1, updated.Id);
             Assert.Equal("personAA", updated.Name);
-            Assert.Equal("PersonPerson", updated.FirstName);
-            Assert.Equal("AA AA", updated.LastName);
             Assert.Equal("aa-aa@test.com", updated.Email);
+            Assert.Equal(36, updated.Age);
 
-            await repo.DeleteItemAsync(1);
-            var deleted = await repo.GetItemAsync(1);
+            await repo.Delete(1);
+            var deleted = await repo.Get(1);
             Assert.Null(deleted);
+
+            var emptyList = await repo.GetList();
+            Assert.Equal(0, emptyList.Count);
         }
 
         [Fact]
         public async void TestGameRepository()
         {
-            var repo = new GameRepository(_tableName, _serviceUrl);
+            IGameRepository repo = new GameRepository(_tableName, _serviceUrl);
             var userId = "U1";
 
-            var list0 = await repo.GetGamesByUserAsync(userId);
+            var list0 = await repo.GetGameList(userId);
             Assert.Equal(0, list0.Count);
 
             var g = new Game { Id = "GA", Name = "Game A" };
-            await repo.AddGameForUserAsync(userId, g);
+            await repo.AddGame(userId, g);
 
-            var list1 = await repo.GetGamesByUserAsync(userId);
+            var list1 = await repo.GetGameList(userId);
             Assert.Equal(1, list1.Count);
 
-            var found = await repo.GetItemAsync(userId, g.Id);
+            var item0 = list1[0];
+            Assert.NotNull(item0);
+            Assert.Equal("GA", item0.Id);
+            Assert.Equal("Game A", item0.Name);
+
+            var found = await repo.GetGame(userId, g.Id);
             Assert.NotNull(found);
             Assert.Equal("GA", found.Id);
             Assert.Equal("Game A", found.Name);
 
-            await repo.DeleteGameFromUserAsync(userId, g.Id);
+            found.Name = "Game AA";
+            await repo.UpdateGame(userId, found);
 
-            var deleted = await repo.GetItemAsync(userId, g.Id);
+            var updated = await repo.GetGame(userId, g.Id);
+            Assert.NotNull(found);
+            Assert.Equal("Game AA", found.Name);
+
+            await repo.DeleteGame(userId, g.Id);
+
+            var deleted = await repo.GetGame(userId, g.Id);
             Assert.Null(deleted);
+
+            var emptyList = await repo.GetGameList(userId);
+            Assert.Equal(0, emptyList.Count);
         }
 
         [Fact]
@@ -245,21 +253,20 @@ namespace DynamoDbRepository.Tests
         {
             var repo = new TestDependentEntityRepo(_tableName, _serviceUrl);
             var parentId = "P0001";
-            var skPrefix = "TEST_ENTITY";
 
-            var list = await repo.TableQueryItemsByParentIdAsync(parentId, skPrefix);
+            var list = await repo.TableQueryItemsByParentIdAsync(parentId);
             Assert.Equal(0, list.Count);
 
             var te1 = new TestEntity { Id = "TE1", Name = "TestEntity TE1" };
             await repo.AddItemAsync(parentId, "TE1", te1);
 
-            list = await repo.TableQueryItemsByParentIdAsync(parentId, skPrefix);
+            list = await repo.TableQueryItemsByParentIdAsync(parentId);
             Assert.Equal(1, list.Count);
 
             var te2 = new TestEntity { Id = "TE2", Name = "TestEntity TE2" };
             await repo.AddItemAsync(parentId, "TE2", te2);
 
-            list = await repo.TableQueryItemsByParentIdAsync(parentId, skPrefix);
+            list = await repo.TableQueryItemsByParentIdAsync(parentId);
             Assert.Equal(2, list.Count);
 
             var found1 = await repo.GetItemAsync(parentId, te1.Id);
@@ -274,14 +281,14 @@ namespace DynamoDbRepository.Tests
 
             await repo.DeleteItemAsync(parentId, te1.Id);
 
-            list = await repo.TableQueryItemsByParentIdAsync(parentId, skPrefix);
+            list = await repo.TableQueryItemsByParentIdAsync(parentId);
             Assert.Equal(1, list.Count);
 
             var deleted1 = await repo.GetItemAsync(parentId, te1.Id);
             Assert.Null(deleted1);
 
             await repo.DeleteItemAsync(parentId, te2.Id);
-            list = await repo.TableQueryItemsByParentIdAsync(parentId, skPrefix);
+            list = await repo.TableQueryItemsByParentIdAsync(parentId);
             Assert.Equal(0, list.Count);
 
             var deleted2 = await repo.GetItemAsync(parentId, te1.Id);

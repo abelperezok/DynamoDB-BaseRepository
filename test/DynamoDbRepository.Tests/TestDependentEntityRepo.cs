@@ -11,16 +11,16 @@ namespace DynamoDbRepository.Tests
         protected override TestEntity FromDynamoDb(DynamoDBItem item)
         {
             var result = new TestEntity();
-            result.Id = item.GetStringValue("Id");
-            result.Name = item.GetStringValue("Name");
+            result.Id = item.GetString("Id");
+            result.Name = item.GetString("Name");
             return result;
         }
 
         protected override DynamoDBItem ToDynamoDb(TestEntity item)
         {
             var dbItem = new DynamoDBItem();
-            dbItem.AddStringValue("Id", item.Id);
-            dbItem.AddStringValue("Name", item.Name);
+            dbItem.AddString("Id", item.Id);
+            dbItem.AddString("Name", item.Name);
             return dbItem;
         }
     }

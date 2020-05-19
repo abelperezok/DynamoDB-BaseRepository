@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Amazon.DynamoDBv2.Model;
@@ -24,24 +25,34 @@ namespace DynamoDbRepository
             return new DynamoDBItem(merged);
         }
 
-        public void AddPKValue(string value)
+        public void AddPK(string value)
         {
-            AddKeyValue(DynamoDBConstants.PK, new AttributeValue(value));
+            AddKeyAttrValue(DynamoDBConstants.PK, new AttributeValue(value));
         }
 
-        public void AddSKValue(string value)
+        public void AddSK(string value)
         {
-            AddKeyValue(DynamoDBConstants.SK, new AttributeValue(value));
+            AddKeyAttrValue(DynamoDBConstants.SK, new AttributeValue(value));
         }
 
-        public void AddGSI1Value(string value)
+        public void AddGSI1(string value)
         {
-            AddKeyValue(DynamoDBConstants.GSI1, new AttributeValue(value));
+            AddKeyAttrValue(DynamoDBConstants.GSI1, new AttributeValue(value));
         }
 
-        public void AddStringValue(string key, string value)
+        public void AddString(string key, string value)
         {
-            AddKeyValue(key, new AttributeValue(value));
+            AddKeyAttrValue(key, new AttributeValue(value));
+        }
+
+        public void AddNumber(string key, int value)
+        {
+            AddKeyAttrValue(key, BaseNumberAttributeValue(Convert.ToString(value)));
+        }
+
+        public void AddNumber(string key, double value)
+        {
+            AddKeyAttrValue(key, BaseNumberAttributeValue(Convert.ToString(value)));
         }
 
         public bool IsEmpty
@@ -49,18 +60,34 @@ namespace DynamoDbRepository
             get { return _data.Count == 0; }
         }
 
-        public string GetStringValue(string key)
+        public string GetString(string key)
         {
             return _data.GetValueOrDefault(key)?.S;
         }
 
+        public int GetInt32(string key)
+        {
+            return Convert.ToInt32(_data.GetValueOrDefault(key)?.N);
+        }
 
-        private void AddKeyValue(string key, AttributeValue value)
+        public double GetDouble(string key)
+        {
+            return Convert.ToDouble(_data.GetValueOrDefault(key)?.N);
+        }        
+
+        private void AddKeyAttrValue(string key, AttributeValue value)
         {
             if (!_data.ContainsKey(key))
                 _data.Add(key, value);
             else
                 _data[key] = value;
+        }
+
+        private AttributeValue BaseNumberAttributeValue(string value)
+        {
+            var result = new AttributeValue();
+            result.N = value;
+            return result;
         }
 
         internal Dictionary<string, AttributeValue> ToDictionary()

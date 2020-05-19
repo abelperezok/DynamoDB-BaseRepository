@@ -29,8 +29,8 @@ namespace DynamoDbRepository
         private DynamoDBItem DynamoDBKey(string pk, string sk)
         {
             var dbItem = new DynamoDBItem();
-            dbItem.AddPKValue(pk);
-            dbItem.AddSKValue(sk);
+            dbItem.AddPK(pk);
+            dbItem.AddSK(sk);
             return dbItem;
         }
 
@@ -89,7 +89,7 @@ namespace DynamoDbRepository
         }
 
         // TODO: leaky abstraction here !!! QueryRequest
-        public QueryRequest GetGSI1AllQueryRequest(string gsi1, string skPrefix)
+        public QueryRequest GetGSI1QueryRequest(string gsi1, string skPrefix)
         {
             return new QueryRequest
             {
@@ -105,15 +105,15 @@ namespace DynamoDbRepository
         }
 
         // TODO: leaky abstraction here !!! QueryRequest
-        public QueryRequest GetTableItemsByParentIdQueryRequest(string pkId, string skPrefix)
+        public QueryRequest GetTableQueryRequest(string pk, string skPrefix)
         {
             return new QueryRequest
             {
                 TableName = TableName,
-                KeyConditionExpression = $"{DynamoDBConstants.PK} = :pk_id and begins_with({DynamoDBConstants.SK}, :sk_prefix)",
+                KeyConditionExpression = $"{DynamoDBConstants.PK} = :pk_value and begins_with({DynamoDBConstants.SK}, :sk_prefix)",
                 ExpressionAttributeValues = new Dictionary<string, AttributeValue>
                 {
-                    { ":pk_id", new AttributeValue(pkId) },
+                    { ":pk_value", new AttributeValue(pk) },
                     { ":sk_prefix", new AttributeValue(skPrefix) }
                 }
             };

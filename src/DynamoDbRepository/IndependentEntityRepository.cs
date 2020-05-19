@@ -19,13 +19,13 @@ namespace DynamoDbRepository
             var sk = SKValue(Convert.ToString(key));
             var dbItem = ToDynamoDb(item);
             // TODO: try to make the value from dbItem to take precedence 
-            dbItem.AddGSI1Value(PKPrefix);
+            dbItem.AddGSI1(PKPrefix);
             await _dynamoDbClient.PutItemAsync(pk, sk, dbItem);
         }
 
         public async Task<IList<TEntity>> GSI1QueryAllAsync()
         {
-            var queryRq = _dynamoDbClient.GetGSI1AllQueryRequest(PKPrefix, SKPrefix);
+            var queryRq = _dynamoDbClient.GetGSI1QueryRequest(PKPrefix, SKPrefix);
             var result = await _dynamoDbClient.QueryAsync(queryRq);
             return result.Select(FromDynamoDb).ToList();
         }

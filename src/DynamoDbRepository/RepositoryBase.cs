@@ -8,9 +8,9 @@ namespace DynamoDbRepository
         protected string SKPrefix = "";
         protected string GSI1Prefix = "";
 
-        public string PKPattern { get { return $"{PKPrefix}{DynamoDBConstants.Separator}{{0}}"; } }
-        public string SKPattern { get { return $"{SKPrefix}{DynamoDBConstants.Separator}{{0}}"; } }
-        public string GSI1Pattern { get { return $"{GSI1Prefix}{DynamoDBConstants.Separator}{{0}}"; } }
+        protected string PKPattern { get { return $"{PKPrefix}{DynamoDBConstants.Separator}{{0}}"; } }
+        protected string SKPattern { get { return $"{SKPrefix}{DynamoDBConstants.Separator}{{0}}"; } }
+        protected string GSI1Pattern { get { return $"{GSI1Prefix}{DynamoDBConstants.Separator}{{0}}"; } }
 
         protected AmazonDynamoDBClientWrapper _dynamoDbClient;
 

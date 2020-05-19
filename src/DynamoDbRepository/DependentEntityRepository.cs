@@ -20,10 +20,10 @@ namespace DynamoDbRepository
             await _dynamoDbClient.PutItemAsync(pk, sk, dbItem);
         }
 
-        public async Task<IList<TEntity>> TableQueryItemsByParentIdAsync(TKey parentKey, string skPrefix)
+        public async Task<IList<TEntity>> TableQueryItemsByParentIdAsync(TKey parentKey)
         {
             var pk = PKValue(Convert.ToString(parentKey));
-            var queryRq = _dynamoDbClient.GetTableItemsByParentIdQueryRequest(pk, skPrefix);
+            var queryRq = _dynamoDbClient.GetTableQueryRequest(pk, SKPrefix);
             var result = await _dynamoDbClient.QueryAsync(queryRq);
             return result.Select(FromDynamoDb).ToList();
         }
@@ -38,14 +38,14 @@ namespace DynamoDbRepository
             return FromDynamoDb(item);
         }
 
-        // public async Task<IList<TEntity>> GetGSI1ItemsByParentIdAsync(TKey parentId)
-        // {
-        //     QueryRequest queryRq = GetItemsByParentIdQueryGSI1Request(parentId);
+        public async Task<IList<TEntity>> GSI1QueryItemsByParentIdAsync(TKey parentKey)
+        {
+            var gsi1 = GSI1Value(Convert.ToString(parentKey));
+            var queryRq = _dynamoDbClient.GetGSI1QueryRequest(gsi1, SKPrefix);
 
-        //     var queryResponse = await _dynamoDbClient.QueryAsync(queryRq);
-        //     var result = queryResponse.Items;
-        //     return result.Select(FromDynamoDb).ToList();
-        // }
+            var items = await _dynamoDbClient.QueryAsync(queryRq);
+            return items.Select(FromDynamoDb).ToList();
+        }
 
         public async Task DeleteItemAsync(TKey parentKey, TKey entityKey)
         {
