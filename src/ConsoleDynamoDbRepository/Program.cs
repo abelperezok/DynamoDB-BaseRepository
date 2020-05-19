@@ -54,7 +54,7 @@ namespace ConsoleDynamoDbRepository
             await repo.AddItemAsync("U1", "G2", g2);
 
             Console.WriteLine("* Getting all users");
-            var games = await repo.GetTableItemsByParentIdAsync("U1", "GAME");
+            var games = await repo.TableQueryItemsByParentIdAsync("U1", "GAME");
             foreach (var item in games)
             {
                 Console.WriteLine(JsonSerializer.Serialize(item));
