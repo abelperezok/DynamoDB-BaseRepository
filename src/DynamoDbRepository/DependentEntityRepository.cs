@@ -20,7 +20,7 @@ namespace DynamoDbRepository
             await _dynamoDbClient.PutItemAsync(pk, sk, dbItem);
         }
 
-        public async Task<IList<TEntity>> GetTableItemsByParentIdAsync(TKey parentKey, string skPrefix)
+        public async Task<IList<TEntity>> TableQueryItemsByParentIdAsync(TKey parentKey, string skPrefix)
         {
             var pk = PKValue(Convert.ToString(parentKey));
             var queryRq = _dynamoDbClient.GetTableItemsByParentIdQueryRequest(pk, skPrefix);

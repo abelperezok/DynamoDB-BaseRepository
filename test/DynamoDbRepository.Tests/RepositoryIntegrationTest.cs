@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Text.Json;
 using SampleDynamoDbRepository;
 using Xunit;
 
 namespace DynamoDbRepository.Tests
 {
+
     public class RepositoryIntegrationTest : IClassFixture<DynamoDBDockerFixture>
     {
         private string _serviceUrl;
@@ -190,6 +192,100 @@ namespace DynamoDbRepository.Tests
 
             var deleted = await repo.GetItemAsync(userId, g.Id);
             Assert.Null(deleted);
+        }
+
+        [Fact]
+        public async void TestGenericIndependentEntityRepository()
+        {
+            var repo = new TestIndependentEntityRepo(_tableName, _serviceUrl);
+
+            var list = await repo.GSI1QueryAllAsync();
+            Assert.Equal(0, list.Count);
+
+            var te1 = new TestEntity { Id = "TE1", Name = "TestEntity TE1" };
+            await repo.AddItemAsync("TE1", te1);
+
+            list = await repo.GSI1QueryAllAsync();
+            Assert.Equal(1, list.Count);
+
+            var te2 = new TestEntity { Id = "TE2", Name = "TestEntity TE2" };
+            await repo.AddItemAsync("TE2", te2);
+
+            list = await repo.GSI1QueryAllAsync();
+            Assert.Equal(2, list.Count);
+
+            var found1 = await repo.GetItemAsync(te1.Id);
+            Assert.NotNull(found1);
+            Assert.Equal("TE1", found1.Id);
+            Assert.Equal("TestEntity TE1", found1.Name);
+
+            var found2 = await repo.GetItemAsync(te2.Id);
+            Assert.NotNull(found2);
+            Assert.Equal("TE2", found2.Id);
+            Assert.Equal("TestEntity TE2", found2.Name);
+
+            await repo.DeleteItemAsync(te1.Id);
+
+            list = await repo.GSI1QueryAllAsync();
+            Assert.Equal(1, list.Count);
+
+            var deleted1 = await repo.GetItemAsync(te1.Id);
+            Assert.Null(deleted1);
+
+            await repo.DeleteItemAsync(te2.Id);
+            list = await repo.GSI1QueryAllAsync();
+            Assert.Equal(0, list.Count);
+
+            var deleted2 = await repo.GetItemAsync(te1.Id);
+            Assert.Null(deleted2);
+        }
+
+        [Fact]
+        public async void TestGenericDependentEntityRepository()
+        {
+            var repo = new TestDependentEntityRepo(_tableName, _serviceUrl);
+            var parentId = "P0001";
+            var skPrefix = "TEST_ENTITY";
+
+            var list = await repo.TableQueryItemsByParentIdAsync(parentId, skPrefix);
+            Assert.Equal(0, list.Count);
+
+            var te1 = new TestEntity { Id = "TE1", Name = "TestEntity TE1" };
+            await repo.AddItemAsync(parentId, "TE1", te1);
+
+            list = await repo.TableQueryItemsByParentIdAsync(parentId, skPrefix);
+            Assert.Equal(1, list.Count);
+
+            var te2 = new TestEntity { Id = "TE2", Name = "TestEntity TE2" };
+            await repo.AddItemAsync(parentId, "TE2", te2);
+
+            list = await repo.TableQueryItemsByParentIdAsync(parentId, skPrefix);
+            Assert.Equal(2, list.Count);
+
+            var found1 = await repo.GetItemAsync(parentId, te1.Id);
+            Assert.NotNull(found1);
+            Assert.Equal("TE1", found1.Id);
+            Assert.Equal("TestEntity TE1", found1.Name);
+
+            var found2 = await repo.GetItemAsync(parentId, te2.Id);
+            Assert.NotNull(found2);
+            Assert.Equal("TE2", found2.Id);
+            Assert.Equal("TestEntity TE2", found2.Name);
+
+            await repo.DeleteItemAsync(parentId, te1.Id);
+
+            list = await repo.TableQueryItemsByParentIdAsync(parentId, skPrefix);
+            Assert.Equal(1, list.Count);
+
+            var deleted1 = await repo.GetItemAsync(parentId, te1.Id);
+            Assert.Null(deleted1);
+
+            await repo.DeleteItemAsync(parentId, te2.Id);
+            list = await repo.TableQueryItemsByParentIdAsync(parentId, skPrefix);
+            Assert.Equal(0, list.Count);
+
+            var deleted2 = await repo.GetItemAsync(parentId, te1.Id);
+            Assert.Null(deleted2);
         }
     }
 }
