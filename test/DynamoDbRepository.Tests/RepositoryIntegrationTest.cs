@@ -203,6 +203,49 @@ namespace DynamoDbRepository.Tests
         }
 
         [Fact]
+        public async void TestUserProjectRepository()
+        {
+            var u1 = new User { Id = "U1", Name = "User 1", FirstName = "User", LastName = "A", Email = "a@test.com" };
+
+            IUserProjectRepository repo = new UserProjectRepository(_tableName, _serviceUrl);
+
+            var allUPU1 = await repo.GetProjectsByUserAsync(u1.Id);
+            Assert.Equal(0, allUPU1.Count);
+
+            var u1p1 = new UserProject { UserId = u1.Id, ProjectId = "P1", Role = "owner" };
+            await repo.AddProjectToUser(u1p1);
+
+            allUPU1 = await repo.GetProjectsByUserAsync(u1.Id);
+            Assert.Equal(1, allUPU1.Count);
+
+            var u1p2 = new UserProject { UserId = u1.Id, ProjectId = "P2", Role = "member" };
+            await repo.AddProjectToUser(u1p2);
+
+            allUPU1 = await repo.GetProjectsByUserAsync(u1.Id);
+            Assert.Equal(2, allUPU1.Count);
+
+            var usersP1 = await repo.GetUsersByProjectAsync("P1");
+            Assert.Equal(1, usersP1.Count);
+            Assert.Equal(u1.Id, usersP1[0].UserId);
+            Assert.Equal("P1", usersP1[0].ProjectId);
+            Assert.Equal("owner", usersP1[0].Role);
+
+            var usersP2 = await repo.GetUsersByProjectAsync("P2");
+            Assert.Equal(1, usersP2.Count);
+            Assert.Equal(u1.Id, usersP2[0].UserId);
+            Assert.Equal("P2", usersP2[0].ProjectId);
+            Assert.Equal("member", usersP2[0].Role);
+
+            await repo.RemoveProjetFromUser(u1p1.UserId, u1p1.ProjectId);
+            allUPU1 = await repo.GetProjectsByUserAsync(u1.Id);
+            Assert.Equal(1, allUPU1.Count);
+
+            await repo.RemoveProjetFromUser(u1p2.UserId, u1p2.ProjectId);
+            allUPU1 = await repo.GetProjectsByUserAsync(u1.Id);
+            Assert.Equal(0, allUPU1.Count);            
+        }
+
+        [Fact]
         public async void TestGenericIndependentEntityRepository()
         {
             var repo = new TestIndependentEntityRepo(_tableName, _serviceUrl);
