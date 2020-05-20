@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using DynamoDbRepository;
 
@@ -52,6 +53,16 @@ namespace SampleDynamoDbRepository
         public async Task UpdateGame(string userId, Game game)
         {
             await AddItemAsync(userId, game.Id, game);
+        }
+
+        public async Task BatchAddGames(string userId, IEnumerable<Game> items)
+        {
+            await BatchAddItemsAsync(userId, items.Select(x => new KeyValuePair<string, Game>(x.Id, x)));
+        }
+
+        public async Task BatchDeleteGames(string userId, IEnumerable<Game> items)
+        {
+            await BatchDeleteItemsAsync(userId, items.Select(x => x.Id));
         }
     }
 }

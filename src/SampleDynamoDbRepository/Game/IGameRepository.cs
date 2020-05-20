@@ -10,5 +10,7 @@ namespace SampleDynamoDbRepository
         Task UpdateGame(string userId, Game game);
         Task<IList<Game>> GetGameList(string userId);
         Task<Game> GetGame(string userId, string gameId);
+        Task BatchAddGames(string userId, IEnumerable<Game> items);
+        Task BatchDeleteGames(string userId, IEnumerable<Game> items);
     }
 }

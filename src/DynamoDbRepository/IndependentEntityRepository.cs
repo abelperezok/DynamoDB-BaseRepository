@@ -15,8 +15,8 @@ namespace DynamoDbRepository
 
         public async Task AddItemAsync(TKey key, TEntity item)
         {
-            var pk = PKValue(Convert.ToString(key));
-            var sk = SKValue(Convert.ToString(key));
+            var pk = PKValue(key);
+            var sk = SKValue(key);
             var dbItem = ToDynamoDb(item);
             // TODO: try to make the value from dbItem to take precedence 
             dbItem.AddGSI1(PKPrefix);
@@ -32,8 +32,8 @@ namespace DynamoDbRepository
 
         public async Task<TEntity> GetItemAsync(TKey key)
         {
-            var pk = PKValue(Convert.ToString(key));
-            var sk = SKValue(Convert.ToString(key));
+            var pk = PKValue(key);
+            var sk = SKValue(key);
             var item = await _dynamoDbClient.GetItemAsync(pk, sk);
             if (item.IsEmpty)
                 return default(TEntity);
@@ -42,9 +42,41 @@ namespace DynamoDbRepository
 
         public async Task DeleteItemAsync(TKey key)
         {
-            var pk = PKValue(Convert.ToString(key));
-            var sk = SKValue(Convert.ToString(key));
+            var pk = PKValue(key);
+            var sk = SKValue(key);
             await _dynamoDbClient.DeleteItemAsync(pk, sk);
+        }
+
+        public async Task BatchAddItemsAsync(IEnumerable<KeyValuePair<TKey, TEntity>> items)
+        {
+            var dbItems = new List<DynamoDBItem>();
+            foreach (var item in items)
+            {
+                var dbItem = ToDynamoDb(item.Value);
+                dbItem.AddPK(PKValue(item.Key));
+                dbItem.AddSK(SKValue(item.Key));
+                // TODO: try to make the value from dbItem to take precedence 
+                dbItem.AddGSI1(PKPrefix);
+
+                dbItems.Add(dbItem);
+            }
+
+            await _dynamoDbClient.BatchAddItemsAsync(dbItems);
+        }
+
+        public async Task BatchDeleteItemsAsync(IEnumerable<TKey> items)
+        {
+            var dbItems = new List<DynamoDBItem>();
+            foreach (var item in items)
+            {
+                var dbItem = new DynamoDBItem();
+                dbItem.AddPK(PKValue(item));
+                dbItem.AddSK(SKValue(item));
+
+                dbItems.Add(dbItem);
+            }
+
+            await _dynamoDbClient.BatchDeleteItemsAsync(dbItems);
         }
     }
 }

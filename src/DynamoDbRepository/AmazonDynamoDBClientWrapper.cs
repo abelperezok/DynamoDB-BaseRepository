@@ -77,6 +77,43 @@ namespace DynamoDbRepository
             return new DynamoDBItem(getitemResponse.Item);
         }
 
+        public async Task BatchAddItemsAsync(IEnumerable<DynamoDBItem> items)
+        {
+            var requests = new List<WriteRequest>();
+            foreach (var item in items)
+            {
+                var putRq = new PutRequest(item.ToDictionary());
+                requests.Add(new WriteRequest(putRq));
+            }
+
+            var batchRq = new Dictionary<string, List<WriteRequest>> { { TableName, requests } };
+            await _dynamoDbClient.BatchWriteItemAsync(batchRq);
+        }
+
+        public async Task BatchDeleteItemsAsync(IEnumerable<DynamoDBItem> items)
+        {
+            var requests = new List<WriteRequest>();
+            foreach (var item in items)
+            {
+                var deleteRq = new DeleteRequest(item.ToDictionary());
+                requests.Add(new WriteRequest(deleteRq));
+            }
+
+            var batchRq = new Dictionary<string, List<WriteRequest>> { { TableName, requests } };
+            var result = await _dynamoDbClient.BatchWriteItemAsync(batchRq);
+        }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

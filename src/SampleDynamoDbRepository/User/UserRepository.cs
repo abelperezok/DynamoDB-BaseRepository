@@ -36,44 +36,39 @@ namespace SampleDynamoDbRepository
             return result;
         }
 
-
         public async Task AddUser(User user)
         {
-            // var dbItem = ToDynamoDb(user);
-            // await _dynamoDbClient.PutItemAsync(user.Id, user.Id, dbItem);
             await AddItemAsync(user.Id, user);
         }
 
         public async Task DeleteUser(string userId)
         {
-            // await _dynamoDbClient.DeleteItemAsync(userId, userId);
             await DeleteItemAsync(userId);
         }
 
         public async Task<IList<User>> GetUserList()
         {
-            // var queryRq =  _dynamoDbClient.GetGSI1AllQueryRequest(GSI1Prefix, SKPrefix);
-            // var result = await _dynamoDbClient.QueryAsync(queryRq);
-            // return result.Select(FromDynamoDb).ToList();
-
             return await GSI1QueryAllAsync();
         }
 
         public async Task UpdateUser(User user)
         {
             await AddItemAsync(user.Id, user);
-            // var dbItem = ToDynamoDb(user);
-            // await _dynamoDbClient.PutItemAsync(user.Id, user.Id, dbItem);
         }
 
         public async Task<User> GetUser(string userId)
         {
             return await GetItemAsync(userId);
-            // var item = await _dynamoDbClient.GetItemAsync(userId, userId);
-            // if (!item.IsEmpty)
-            //     return FromDynamoDb(item);
+        }
 
-            // return default(User);
+        public async Task BatchAddUsers(IEnumerable<User> items)
+        {
+            await BatchAddItemsAsync(items.Select(x => new KeyValuePair<string, User>(x.Id, x)));
+        }
+
+        public async Task BatchDeleteUsers(IEnumerable<User> items)
+        {
+            await BatchDeleteItemsAsync(items.Select(x => x.Id));
         }
     }
 }

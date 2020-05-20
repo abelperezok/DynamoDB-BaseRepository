@@ -10,5 +10,7 @@ namespace SampleDynamoDbRepository
         Task UpdateUser(User user);
         Task<IList<User>> GetUserList();
         Task<User> GetUser(string userId);
+        Task BatchAddUsers(IEnumerable<User> items);
+        Task BatchDeleteUsers(IEnumerable<User> items);
     }
 }

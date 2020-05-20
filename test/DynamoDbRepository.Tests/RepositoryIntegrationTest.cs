@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text.Json;
 using SampleDynamoDbRepository;
 using Xunit;
@@ -18,7 +19,7 @@ namespace DynamoDbRepository.Tests
         }
 
         [Fact]
-        public async void TestUserRepository()
+        public async void TestRepo_UserRepository()
         {
             IUserRepository repo = new UserRepository(_tableName, _serviceUrl);
 
@@ -71,7 +72,7 @@ namespace DynamoDbRepository.Tests
         }
 
         [Fact]
-        public async void TestProjectRepository()
+        public async void TestRepo_ProjectRepository()
         {
             IProjectRepository repo = new ProjectRepository(_tableName, _serviceUrl);
 
@@ -114,7 +115,7 @@ namespace DynamoDbRepository.Tests
         }
 
         [Fact]
-        public async void TestPersonRepository()
+        public async void TestRepo_PersonRepository()
         {
             ISimpleRepository<int, Person> repo = new PersonRepository(_tableName, _serviceUrl);
 
@@ -162,7 +163,7 @@ namespace DynamoDbRepository.Tests
         }
 
         [Fact]
-        public async void TestGameRepository()
+        public async void TestRepo_GameRepository()
         {
             IGameRepository repo = new GameRepository(_tableName, _serviceUrl);
             var userId = "U1";
@@ -203,7 +204,7 @@ namespace DynamoDbRepository.Tests
         }
 
         [Fact]
-        public async void TestUserProjectRepository()
+        public async void TestRepo_UserProjectRepository()
         {
             var u1 = new User { Id = "U1", Name = "User 1", FirstName = "User", LastName = "A", Email = "a@test.com" };
 
@@ -242,11 +243,11 @@ namespace DynamoDbRepository.Tests
 
             await repo.RemoveProjetFromUser(u1p2.UserId, u1p2.ProjectId);
             allUPU1 = await repo.GetProjectsByUserAsync(u1.Id);
-            Assert.Equal(0, allUPU1.Count);            
+            Assert.Equal(0, allUPU1.Count);
         }
 
         [Fact]
-        public async void TestGenericIndependentEntityRepository()
+        public async void TestGenericOperations_IndependentEntityRepository()
         {
             var repo = new TestIndependentEntityRepo(_tableName, _serviceUrl);
 
@@ -292,7 +293,7 @@ namespace DynamoDbRepository.Tests
         }
 
         [Fact]
-        public async void TestGenericDependentEntityRepository()
+        public async void TestGenericOperations_DependentEntityRepository()
         {
             var repo = new TestDependentEntityRepo(_tableName, _serviceUrl);
             var parentId = "P0001";
@@ -336,6 +337,79 @@ namespace DynamoDbRepository.Tests
 
             var deleted2 = await repo.GetItemAsync(parentId, te1.Id);
             Assert.Null(deleted2);
+        }
+
+        [Fact]
+        public async void TestBatchOperations_IndependentEntityRepository()
+        {
+            var repo = new TestIndependentEntityRepo(_tableName, _serviceUrl);
+            var itemsToCreate = new List<KeyValuePair<string, TestEntity>>();
+            for (int i = 50; i < 60; i++)
+            {
+                var te = new TestEntity { Id = "TE" + i, Name = "TestEntity TE" + i };
+                itemsToCreate.Add(new KeyValuePair<string, TestEntity>(te.Id, te));
+            }
+            await repo.BatchAddItemsAsync(itemsToCreate);
+
+            var list = await repo.GSI1QueryAllAsync();
+            Assert.Equal(10, list.Count);
+
+            for (int i = 0; i < 10; i++)
+            {
+                var item = list[i];
+                var id = i + 50;
+                Assert.NotNull(item);
+                Assert.Equal("TE" + id, item.Id);
+                Assert.Equal("TestEntity TE" + id, item.Name);
+            }
+
+            var itemsToDelete = new List<string>();
+            for (int i = 50; i < 60; i++)
+            {
+                var te = new TestEntity { Id = "TE" + i };
+                itemsToDelete.Add(te.Id);
+            }
+            await repo.BatchDeleteItemsAsync(itemsToDelete);
+
+            var emptyList = await repo.GSI1QueryAllAsync();
+            Assert.Empty(emptyList);
+        }
+
+        [Fact]
+        public async void TestBatchOperations_DependentEntityRepository()
+        {
+            var parent = new TestEntity { Id = "PTE1" };
+            var repo = new TestDependentEntityRepo(_tableName, _serviceUrl);
+            var itemsToCreate = new List<KeyValuePair<string, TestEntity>>();
+            for (int i = 50; i < 60; i++)
+            {
+                var te = new TestEntity { Id = "TE" + i, Name = "TestEntity TE" + i };
+                itemsToCreate.Add(new KeyValuePair<string, TestEntity>(te.Id, te));
+            }
+            await repo.BatchAddItemsAsync(parent.Id, itemsToCreate);
+
+            var list = await repo.TableQueryItemsByParentIdAsync(parent.Id);
+            Assert.Equal(10, list.Count);
+
+            for (int i = 0; i < 10; i++)
+            {
+                var item = list[i];
+                var id = i + 50;
+                Assert.NotNull(item);
+                Assert.Equal("TE" + id, item.Id);
+                Assert.Equal("TestEntity TE" + id, item.Name);
+            }
+
+            var itemsToDelete = new List<string>();
+            for (int i = 50; i < 60; i++)
+            {
+                var te = new TestEntity { Id = "TE" + i };
+                itemsToDelete.Add(te.Id);
+            }
+            await repo.BatchDeleteItemsAsync(parent.Id, itemsToDelete);
+
+            var emptyList = await repo.TableQueryItemsByParentIdAsync(parent.Id);
+            Assert.Empty(emptyList);
         }
     }
 }
