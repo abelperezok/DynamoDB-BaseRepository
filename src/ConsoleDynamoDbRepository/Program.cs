@@ -11,7 +11,7 @@ namespace ConsoleDynamoDbRepository
         private static readonly string _tableName = "dynamodb_test_table";
         static async Task Main(string[] args)
         {
-            // await TestProjectRepositoryCRUD();
+            await TestProjectRepositoryCRUD();
 
             // await TestUserRepositoryAddItemsOneByOne();
 
@@ -20,18 +20,16 @@ namespace ConsoleDynamoDbRepository
 
             // await TestUserRepositoryDeleteItemsOneByOne();
 
-            await TestUserRepositoryBatchAddItems();
+            // await TestUserRepositoryBatchAddItems();
 
-            await TestGameRepositoryBatchAddItems();
+            // await TestGameRepositoryBatchAddItems();
 
-            Console.ReadKey();
+            // Console.ReadKey();
 
 
-            await TestUserRepositoryBatchDeleteItems();
+            // await TestUserRepositoryBatchDeleteItems();
 
-            Console.ReadKey();
-            
-            await TestGameRepositoryBatchDeleteItems();
+            // await TestGameRepositoryBatchDeleteItems();
 
             // await TestGameRepositorySpecificOperations();
 
@@ -300,7 +298,6 @@ namespace ConsoleDynamoDbRepository
                 Console.WriteLine(JsonSerializer.Serialize(item));
             }
         }
-
 
         private static async Task TestProjectRepositoryCRUD()
         {

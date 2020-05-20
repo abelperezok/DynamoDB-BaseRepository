@@ -12,11 +12,11 @@ namespace DynamoDbRepository
         protected string SKPattern { get { return $"{SKPrefix}{DynamoDBConstants.Separator}{{0}}"; } }
         protected string GSI1Pattern { get { return $"{GSI1Prefix}{DynamoDBConstants.Separator}{{0}}"; } }
 
-        protected AmazonDynamoDBClientWrapper _dynamoDbClient;
+        protected DynamoDBClient _dynamoDbClient;
 
         public RepositoryBase(string tableName, string serviceUrl = null)
         {
-            _dynamoDbClient = new AmazonDynamoDBClientWrapper(tableName, serviceUrl);
+            _dynamoDbClient = new DynamoDBClient(tableName, serviceUrl);
         }
 
         protected abstract DynamoDBItem ToDynamoDb(TEntity item);

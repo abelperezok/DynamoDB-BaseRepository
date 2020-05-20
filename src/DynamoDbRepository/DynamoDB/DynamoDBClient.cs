@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -7,12 +7,12 @@ using Amazon.DynamoDBv2.Model;
 
 namespace DynamoDbRepository
 {
-    public class AmazonDynamoDBClientWrapper
+    public class DynamoDBClient
     {
         protected readonly IAmazonDynamoDB _dynamoDbClient;
         protected readonly string TableName;
 
-        public AmazonDynamoDBClientWrapper(string tableName, string serviceUrl = null)
+        public DynamoDBClient(string tableName, string serviceUrl = null)
         {
             TableName = tableName;
             if (serviceUrl != null)
