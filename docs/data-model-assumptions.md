@@ -40,11 +40,11 @@ PROJECT | METADATA#P3 | P3 | Project 3 | desc project 3
   * Get Project P1: Table PK = PROJECT#P1, SK = METADATA#P1
   * Get Game G1 for User U1: Table PK = USER#U1, SK = GAME#G1
 
-* Multiple items per type: GSI PK = ENTITY
+* Multiple items of one type: GSI PK = ENTITY
   * Get all users: GSI PK = USER
   * Get all projects: GSI PK = PROJECT
 
-* Multiple items per parent instance: Table PK = PARENT_ENTITY#ID, SK = ENTITY#ID
+* Item collection by parent ID: Table PK = PARENT_ENTITY#ID, SK = ENTITY#ID
   * Get all games by user U1 : Table PK = USER#U1, SK begins_with GAME
 
 ## Creating the table - AWS CLI

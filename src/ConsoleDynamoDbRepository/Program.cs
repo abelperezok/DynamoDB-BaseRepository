@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
+using DynamoDbRepository;
 using SampleDynamoDbRepository;
 
 namespace ConsoleDynamoDbRepository
@@ -11,7 +12,7 @@ namespace ConsoleDynamoDbRepository
         private static readonly string _tableName = "dynamodb_test_table";
         static async Task Main(string[] args)
         {
-            await TestProjectRepositoryCRUD();
+            // await TestProjectRepositoryCRUD();
 
             // await TestUserRepositoryAddItemsOneByOne();
 
@@ -39,6 +40,8 @@ namespace ConsoleDynamoDbRepository
             // await TestCRUD_UserRepository();
 
             // await TestCRUD_GameRepo_GenericMethods();
+
+            await TestCRUD_PersonRepository();
         }
 
         private static async Task TestCRUD_GameRepository()
@@ -106,6 +109,44 @@ namespace ConsoleDynamoDbRepository
 
             Console.WriteLine("* Deleting user U2");
             await repo.DeleteUser(u2.Id);
+        }
+
+        public static async Task TestCRUD_PersonRepository()
+        {
+            // Create a new PersonRepository
+            ISimpleRepository<int, Person> repo = new PersonRepository(_tableName);
+
+            // Prepare a Person instance
+            var p1 = new Person
+            {
+                Id = 1,
+                Name = "personA",
+                Email = "pa@test.com",
+                Age = 35
+            };
+
+            Console.WriteLine("* Adding Person 1");
+            // Add a new person
+            await repo.Add(p1);
+
+            Console.WriteLine("* Getting the list");
+            // Get the full list
+            var list = await repo.GetList();
+            foreach (var item in list)
+            {
+                Console.WriteLine(JsonSerializer.Serialize(item));
+            }
+
+            Console.ReadKey();
+
+            Console.WriteLine("* Getting Person 1");
+            // Get an individual Person by its Id
+            var found1 = await repo.Get(p1.Id);
+            Console.WriteLine(JsonSerializer.Serialize(found1));
+
+            Console.WriteLine("* Deleting Person 1");
+            // Delete an individual Person by its Id
+            await repo.Delete(p1.Id);
         }
 
         private static async Task TestUserProjectRepositoryManyToMany()
@@ -341,5 +382,8 @@ namespace ConsoleDynamoDbRepository
             else
                 Console.WriteLine("not found");
         }
+
+
+
     }
 }
