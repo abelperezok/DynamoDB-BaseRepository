@@ -20,13 +20,13 @@ Key features:
 
 [Usage - Independent entities](docs/usage-independent-entities.md)
 
-<!-- [Usage - Item collection (one to many)](docs/usage-one-to-many.md)
+[Usage - Item collection (one to many)](docs/usage-one-to-many.md)
 
-[Methods reference](docs/methods-reference.md)
+<!-- [Methods reference](docs/methods-reference.md) -->
 
 [Example: CRUD operations](docs/example-crud-operations.md)
 
-[Example: Batch operations](docs/example-batch-operations.md) -->
+[Example: Batch operations](docs/example-batch-operations.md)
 
 ## Quick usage guide
 
