@@ -163,7 +163,7 @@ namespace DynamoDbRepository.Tests
             var list = await repo.GetList();
             Assert.Equal(0, list.Count);
 
-            var item = new Person { Id = 1, Name = "personA", Email = "pa@test.com", Age = 35 };
+            var item = new Person { Id = 1, Name = "personA", Email = "pa@test.com", Age = 35, Height = 1.75 };
             await repo.Add(item);
 
             list = await repo.GetList();
@@ -175,6 +175,7 @@ namespace DynamoDbRepository.Tests
             Assert.Equal("personA", item0.Name);
             Assert.Equal("pa@test.com", item0.Email);
             Assert.Equal(35, item0.Age);
+            Assert.Equal(1.75, item0.Height);
 
             var found = await repo.Get(1);
             Assert.NotNull(found);
@@ -182,10 +183,12 @@ namespace DynamoDbRepository.Tests
             Assert.Equal("personA", found.Name);
             Assert.Equal("pa@test.com", found.Email);
             Assert.Equal(35, found.Age);
+            Assert.Equal(1.75, found.Height);
 
             found.Name = "personAA";
             found.Email = "aa-aa@test.com";
             found.Age = 36;
+            found.Height = 1.78;
             await repo.Update(found);
 
             var updated = await repo.Get(1);
@@ -194,6 +197,7 @@ namespace DynamoDbRepository.Tests
             Assert.Equal("personAA", updated.Name);
             Assert.Equal("aa-aa@test.com", updated.Email);
             Assert.Equal(36, updated.Age);
+            Assert.Equal(1.78, updated.Height);
 
             await repo.Delete(1);
             var deleted = await repo.Get(1);

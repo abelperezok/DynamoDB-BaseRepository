@@ -22,6 +22,7 @@ namespace SampleDynamoDbRepository
             dbItem.AddString("Name", item.Name);
             dbItem.AddString("Email", item.Email);
             dbItem.AddNumber("Age", item.Age);
+            dbItem.AddNumber("Height", item.Height);
             return dbItem;
         }
 
@@ -32,6 +33,7 @@ namespace SampleDynamoDbRepository
             result.Name = item.GetString("Name");
             result.Email = item.GetString("Email");
             result.Age = item.GetInt32("Age");
+            result.Height = item.GetDouble("Height");
             return result;
         }
     }
