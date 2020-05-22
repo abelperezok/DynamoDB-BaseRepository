@@ -27,5 +27,13 @@ jobs:
       run: dotnet build
       working-directory: test/DynamoDbRepository.Tests
     - name: Test
-      run: AWS_ACCESS_KEY_ID=abc AWS_SECRET_ACCESS_KEY=xyz dotnet test --no-build --verbosity normal
+      run: >
+        AWS_ACCESS_KEY_ID=abc AWS_SECRET_ACCESS_KEY=xyz 
+        dotnet test --no-build 
+        /p:CollectCoverage=true /p:CoverletOutput=TestResults/ /p:CoverletOutputFormat=lcov
       working-directory: test/DynamoDbRepository.Tests
+    - name: Publish coverage report to coveralls.io
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        path-to-lcov: test/DynamoDbRepository.Tests/TestResults/coverage.info

@@ -224,6 +224,12 @@ namespace DynamoDbRepository.Tests
 
             allUPU1 = await repo.GetProjectsByUserAsync(u1.Id);
             Assert.Equal(2, allUPU1.Count);
+            Assert.Equal(u1.Id, allUPU1[0].UserId);
+            Assert.Equal("P1", allUPU1[0].ProjectId);
+            Assert.Equal("owner", allUPU1[0].Role);
+            Assert.Equal(u1.Id, allUPU1[1].UserId);
+            Assert.Equal("P2", allUPU1[1].ProjectId);
+            Assert.Equal("member", allUPU1[1].Role);
 
             var usersP1 = await repo.GetUsersByProjectAsync("P1");
             Assert.Equal(1, usersP1.Count);
