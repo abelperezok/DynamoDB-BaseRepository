@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using DynamoDbRepository;
 
@@ -55,6 +56,16 @@ namespace SampleDynamoDbRepository
         public async Task<IList<UserProject>> GetUsersByProjectAsync(string projectId)
         {
             return await GSI1QueryItemsByParentIdAsync(projectId);
+        }
+
+        public async Task BatchAddProjectsToUser(string userId, IEnumerable<UserProject> userProjects)
+        {
+            await BatchAddItemsAsync(userId, userProjects.Select(x => new KeyValuePair<string, UserProject>(x.ProjectId, x)));
+        }
+
+        public async Task BatchRemoveProjectsFromUser(string userId, IEnumerable<UserProject> userProjects)
+        {
+            await BatchDeleteItemsAsync(userId, userProjects.Select(x => x.ProjectId));
         }
     }
 }

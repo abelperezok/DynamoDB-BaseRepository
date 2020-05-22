@@ -49,5 +49,40 @@ namespace DynamoDbRepository
             var result = await _dynamoDbClient.QueryAsync(queryRq);
             return result.Select(FromDynamoDb).ToList();
         }
+
+        public async Task BatchAddItemsAsync(TKey parentKey, IEnumerable<KeyValuePair<TKey, TEntity>> items)
+        {
+            var pk = PKValue(parentKey);
+            var dbItems = new List<DynamoDBItem>();
+            foreach (var item in items)
+            {
+                var relationKey = GetRelationKey(parentKey, item.Key);
+                var sk = SKValue(relationKey);
+                var dbItem = ToDynamoDb(item.Value);
+                dbItem.AddPK(pk);
+                dbItem.AddSK(sk);
+                dbItem.AddGSI1(GSI1Value(item.Key));
+                dbItems.Add(dbItem);
+            }
+
+            await _dynamoDbClient.BatchAddItemsAsync(dbItems);
+        }
+
+        public async Task BatchDeleteItemsAsync(TKey parentKey, IEnumerable<TKey> items)
+        {
+            var pk = PKValue(parentKey);
+            var dbItems = new List<DynamoDBItem>();
+            foreach (var item in items)
+            {
+                var relationKey = GetRelationKey(parentKey, item);
+                var dbItem = new DynamoDBItem();
+                dbItem.AddPK(pk);
+                dbItem.AddSK(SKValue(relationKey));
+
+                dbItems.Add(dbItem);
+            }
+
+            await _dynamoDbClient.BatchDeleteItemsAsync(dbItems);
+        }
     }
 }

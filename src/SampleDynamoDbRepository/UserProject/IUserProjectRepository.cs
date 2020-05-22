@@ -12,5 +12,9 @@ namespace SampleDynamoDbRepository
         Task<IList<UserProject>> GetProjectsByUserAsync(string userId);
 
         Task<IList<UserProject>> GetUsersByProjectAsync(string projectId);
+
+        Task BatchAddProjectsToUser(string userId, IEnumerable<UserProject> userProjects);
+
+        Task BatchRemoveProjectsFromUser(string userId, IEnumerable<UserProject> userProjects);
     }
 }

@@ -72,6 +72,47 @@ namespace DynamoDbRepository.Tests
         }
 
         [Fact]
+        public async void TestRepo_Batch_UserRepository()
+        {
+
+            IUserRepository repo = new UserRepository(_tableName, _serviceUrl);
+
+            var itemsToCreate = new List<User>();
+            for (int i = 50; i < 60; i++)
+            {
+                var u = new User { Id = "A" + i, Name = "userA" + i, FirstName = "User" + i, LastName = "A" + i, Email = $"a{i}@test.com" };
+                itemsToCreate.Add(u);
+            }
+            await repo.BatchAddUsers(itemsToCreate);
+
+            var list = await repo.GetUserList();
+            Assert.Equal(10, list.Count);
+
+            for (int i = 0; i < 10; i++)
+            {
+                var item = list[i];
+                var id = i + 50;
+                Assert.NotNull(item);
+                Assert.Equal("A" + id, item.Id);
+                Assert.Equal("userA" + id, item.Name);
+                Assert.Equal("User" + id, item.FirstName);
+                Assert.Equal("A" + id, item.LastName);
+                Assert.Equal($"a{id}@test.com", item.Email);
+            }
+
+            var itemsToDelete = new List<User>();
+            for (int i = 50; i < 60; i++)
+            {
+                var up = new User { Id = "A" + i };
+                itemsToDelete.Add(up);
+            }
+            await repo.BatchDeleteUsers(itemsToDelete);
+
+            var emptyList = await repo.GetUserList();
+            Assert.Empty(emptyList);
+        }
+
+        [Fact]
         public async void TestRepo_ProjectRepository()
         {
             IProjectRepository repo = new ProjectRepository(_tableName, _serviceUrl);
@@ -204,6 +245,45 @@ namespace DynamoDbRepository.Tests
         }
 
         [Fact]
+        public async void TestRepo_Batch_GameRepository()
+        {
+            var u1 = new User { Id = "U1", Name = "User 1", FirstName = "User", LastName = "A", Email = "a@test.com" };
+
+            IGameRepository repo = new GameRepository(_tableName, _serviceUrl);
+
+            var itemsToCreate = new List<Game>();
+            for (int i = 50; i < 60; i++)
+            {
+                var g = new Game { Id = "G" + i, Name = "Game " + i };
+                itemsToCreate.Add(g);
+            }
+            await repo.BatchAddGames(u1.Id, itemsToCreate);
+
+            var list = await repo.GetGameList(u1.Id);
+            Assert.Equal(10, list.Count);
+
+            for (int i = 0; i < 10; i++)
+            {
+                var item = list[i];
+                var id = i + 50;
+                Assert.NotNull(item);
+                Assert.Equal("G" + id, item.Id);
+                Assert.Equal("Game " + id, item.Name);
+            }
+
+            var itemsToDelete = new List<Game>();
+            for (int i = 50; i < 60; i++)
+            {
+                var g = new Game { Id = "G" + i, Name = "Game " + i };
+                itemsToDelete.Add(g);
+            }
+            await repo.BatchDeleteGames(u1.Id, itemsToDelete);
+
+            var emptyList = await repo.GetGameList(u1.Id);
+            Assert.Empty(emptyList);
+        }
+
+        [Fact]
         public async void TestRepo_UserProjectRepository()
         {
             var u1 = new User { Id = "U1", Name = "User 1", FirstName = "User", LastName = "A", Email = "a@test.com" };
@@ -250,6 +330,46 @@ namespace DynamoDbRepository.Tests
             await repo.RemoveProjectFromUser(u1p2.UserId, u1p2.ProjectId);
             allUPU1 = await repo.GetProjectsByUserAsync(u1.Id);
             Assert.Equal(0, allUPU1.Count);
+        }
+
+        [Fact]
+        public async void TestRepo_Batch_UserProjectRepository()
+        {
+            var u1 = new User { Id = "U1", Name = "User 1", FirstName = "User", LastName = "A", Email = "a@test.com" };
+
+            IUserProjectRepository repo = new UserProjectRepository(_tableName, _serviceUrl);
+
+            var itemsToCreate = new List<UserProject>();
+            for (int i = 50; i < 60; i++)
+            {
+                var up = new UserProject { UserId = u1.Id, ProjectId = "P" + i, Role = "member" };
+                itemsToCreate.Add(up);
+            }
+            await repo.BatchAddProjectsToUser(u1.Id, itemsToCreate);
+
+            var list = await repo.GetProjectsByUserAsync(u1.Id);
+            Assert.Equal(10, list.Count);
+
+            for (int i = 0; i < 10; i++)
+            {
+                var item = list[i];
+                var id = i + 50;
+                Assert.NotNull(item);
+                Assert.Equal(u1.Id, item.UserId);
+                Assert.Equal("P" + id, item.ProjectId);
+                Assert.Equal("member", item.Role);
+            }
+
+            var itemsToDelete = new List<UserProject>();
+            for (int i = 50; i < 60; i++)
+            {
+                var up = new UserProject { UserId = u1.Id, ProjectId = "P" + i };
+                itemsToDelete.Add(up);
+            }
+            await repo.BatchRemoveProjectsFromUser(u1.Id, itemsToDelete);
+
+            var emptyList = await repo.GetProjectsByUserAsync(u1.Id);
+            Assert.Empty(emptyList);
         }
 
         [Fact]
