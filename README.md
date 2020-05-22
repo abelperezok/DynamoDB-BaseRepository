@@ -1,7 +1,7 @@
 # DynamoDB base repository
 
 [![.NET Core Github Actions badge](https://github.com/abelperezok/DynamoDB-BaseRepository/workflows/.NET%20Core/badge.svg)](https://github.com/abelperezok/DynamoDB-BaseRepository/actions)
-[![Coverage Status](https://coveralls.io/repos/github/abelperezok/DynamoDB-BaseRepository/badge.svg)](https://coveralls.io/github/abelperezok/DynamoDB-BaseRepository)
+[![Coverage Status](https://coveralls.io/repos/github/abelperezok/DynamoDB-BaseRepository/badge.svg?branch=master)](https://coveralls.io/github/abelperezok/DynamoDB-BaseRepository?branch=master)
 
 C# .NET Core implementation of the repository pattern using DynamoDB as data store using hierarchical data modelling strategy overloading the partition and sort key as well secondary index.
 
