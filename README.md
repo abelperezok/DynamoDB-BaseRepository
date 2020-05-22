@@ -3,14 +3,16 @@
 [![.NET Core Github Actions badge](https://github.com/abelperezok/DynamoDB-BaseRepository/workflows/.NET%20Core/badge.svg)](https://github.com/abelperezok/DynamoDB-BaseRepository/actions)
 [![Coverage Status](https://coveralls.io/repos/github/abelperezok/DynamoDB-BaseRepository/badge.svg?branch=master)](https://coveralls.io/github/abelperezok/DynamoDB-BaseRepository?branch=master)
 
-C# .NET Core implementation of the repository pattern using DynamoDB as data store using hierarchical data modelling strategy overloading the partition and sort key as well secondary index.
+C# .NET Core implementation of the repository pattern using DynamoDB as data store using single table and hierarchical data modelling approach overloading the partition and sort key as well secondary index.
 
 This implementation aims to solve the most common data persistence use cases ranging from independent entities to more complex data models.
 
 Key features:
-* Ready to use CRUD and batch operations.
+* Ready to use CRUD operations.
+* Ready to use batch operations.
 * Generic design for flexibility of data types.
-* Extensible allowing the addition of specific functionality.
+* One to many relationship.
+* Many to many relationships
 
 
 ## Content
@@ -24,8 +26,6 @@ Key features:
 [Usage - One to many](docs/usage-one-to-many.md)
 
 [Usage - Many to many](docs/usage-many-to-many.md)
-
-<!-- [Methods reference](docs/methods-reference.md) -->
 
 [Example: CRUD operations](docs/example-crud-operations.md)
 
