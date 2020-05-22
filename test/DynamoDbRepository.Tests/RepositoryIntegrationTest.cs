@@ -243,11 +243,11 @@ namespace DynamoDbRepository.Tests
             Assert.Equal("P2", usersP2[0].ProjectId);
             Assert.Equal("member", usersP2[0].Role);
 
-            await repo.RemoveProjetFromUser(u1p1.UserId, u1p1.ProjectId);
+            await repo.RemoveProjectFromUser(u1p1.UserId, u1p1.ProjectId);
             allUPU1 = await repo.GetProjectsByUserAsync(u1.Id);
             Assert.Equal(1, allUPU1.Count);
 
-            await repo.RemoveProjetFromUser(u1p2.UserId, u1p2.ProjectId);
+            await repo.RemoveProjectFromUser(u1p2.UserId, u1p2.ProjectId);
             allUPU1 = await repo.GetProjectsByUserAsync(u1.Id);
             Assert.Equal(0, allUPU1.Count);
         }

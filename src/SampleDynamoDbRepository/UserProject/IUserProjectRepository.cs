@@ -7,7 +7,7 @@ namespace SampleDynamoDbRepository
     {
         Task AddProjectToUser(UserProject userProject);
 
-        Task RemoveProjetFromUser(string userId, string projectId);
+        Task RemoveProjectFromUser(string userId, string projectId);
 
         Task<IList<UserProject>> GetProjectsByUserAsync(string userId);
 

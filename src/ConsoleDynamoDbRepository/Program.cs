@@ -185,8 +185,8 @@ namespace ConsoleDynamoDbRepository
             }
 
             Console.WriteLine("Deleting projects P1 and P2 for user U1");
-            await repo.RemoveProjetFromUser(u1p1.UserId, u1p1.ProjectId);
-            await repo.RemoveProjetFromUser(u1p2.UserId, u1p2.ProjectId);
+            await repo.RemoveProjectFromUser(u1p1.UserId, u1p1.ProjectId);
+            await repo.RemoveProjectFromUser(u1p2.UserId, u1p2.ProjectId);
 
             Console.WriteLine("Getting projects by user U1 - should be empty");
             var deletedUPU1 = await repo.GetProjectsByUserAsync(u1.Id);

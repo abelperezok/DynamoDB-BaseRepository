@@ -17,7 +17,7 @@ namespace SampleDynamoDbRepository
         {
             return parent1Key + parent2Key;
         }
-        
+
         protected override DynamoDBItem ToDynamoDb(UserProject item)
         {
             var dbItem = new DynamoDBItem();
@@ -42,7 +42,7 @@ namespace SampleDynamoDbRepository
             await AddItemAsync(userProject.UserId, userProject.ProjectId, userProject);
         }
 
-        public async Task RemoveProjetFromUser(string userId, string projectId)
+        public async Task RemoveProjectFromUser(string userId, string projectId)
         {
             await DeleteItemAsync(userId, projectId);
         }
@@ -56,7 +56,5 @@ namespace SampleDynamoDbRepository
         {
             return await GSI1QueryItemsByParentIdAsync(projectId);
         }
-
-
     }
 }
