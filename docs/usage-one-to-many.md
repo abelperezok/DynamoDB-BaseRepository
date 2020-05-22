@@ -63,17 +63,23 @@ The typical implementation of the abstract methods will focus only on the data a
     }
 ```
 
-Optionally (and recommended), define your own interface so it exposes methods with the relevant parameter and return values, it's also a good practice to separate interface from implementation.
+Optionally (and recommended), define your own interface so it exposes methods with the relevant parameter and return values, it's also good practice to separate interface from implementation.
 
 ```cs
     public interface IGameRepository
     {
         Task AddGame(string userId, Game game);
+
         Task DeleteGame(string userId, string gameId);
+
         Task UpdateGame(string userId, Game game);
+
         Task<IList<Game>> GetGameList(string userId);
+
         Task<Game> GetGame(string userId, string gameId);
+
         Task BatchAddGames(string userId, IEnumerable<Game> items);
+
         Task BatchDeleteGames(string userId, IEnumerable<Game> items);
     }
 ```
