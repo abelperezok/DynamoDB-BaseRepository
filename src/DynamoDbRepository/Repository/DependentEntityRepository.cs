@@ -38,15 +38,6 @@ namespace DynamoDbRepository
             return FromDynamoDb(item);
         }
 
-        public async Task<IList<TEntity>> GSI1QueryItemsByParentIdAsync(TKey parentKey)
-        {
-            var gsi1 = GSI1Value(parentKey);
-            var queryRq = _dynamoDbClient.GetGSI1QueryRequest(gsi1, SKPrefix);
-
-            var items = await _dynamoDbClient.QueryAsync(queryRq);
-            return items.Select(FromDynamoDb).ToList();
-        }
-
         public async Task DeleteItemAsync(TKey parentKey, TKey entityKey)
         {
             var pk = PKValue(parentKey);

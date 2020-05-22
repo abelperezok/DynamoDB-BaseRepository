@@ -4,7 +4,7 @@ using DynamoDbRepository;
 
 namespace SampleDynamoDbRepository
 {
-    public class UserProjectRepository : DependentEntityRepository<string, UserProject>, IUserProjectRepository
+    public class UserProjectRepository : AssociativeEntityRepository<string, UserProject>, IUserProjectRepository
     {
 
         public UserProjectRepository(string tableName, string serviceUrl = null) : base(tableName, serviceUrl)
@@ -13,17 +13,17 @@ namespace SampleDynamoDbRepository
             SKPrefix = "USER_PROJECT";
             GSI1Prefix = "PROJECT";
         }
-
+        protected override string GetRelationKey(string parent1Key, string parent2Key)
+        {
+            return parent1Key + parent2Key;
+        }
+        
         protected override DynamoDBItem ToDynamoDb(UserProject item)
         {
             var dbItem = new DynamoDBItem();
-
             dbItem.AddString("UserId", item.UserId);
             dbItem.AddString("ProjectId", item.ProjectId);
             dbItem.AddString("Role", item.Role);
-
-            dbItem.AddGSI1(GSI1Value(item.ProjectId));
-
             return dbItem;
         }
 
@@ -37,22 +37,14 @@ namespace SampleDynamoDbRepository
         }
 
 
-        private string GetRelationKey(string userId, string projectId)
-        {
-            return userId + projectId;
-        }
-
-
         public async Task AddProjectToUser(UserProject userProject)
         {
-            var relationKey = GetRelationKey(userProject.UserId, userProject.ProjectId);
-            await AddItemAsync(userProject.UserId, relationKey, userProject);
+            await AddItemAsync(userProject.UserId, userProject.ProjectId, userProject);
         }
 
         public async Task RemoveProjetFromUser(string userId, string projectId)
         {
-            var relationKey = GetRelationKey(userId, projectId);
-            await DeleteItemAsync(userId, relationKey);
+            await DeleteItemAsync(userId, projectId);
         }
 
         public async Task<IList<UserProject>> GetProjectsByUserAsync(string userId)
@@ -64,5 +56,7 @@ namespace SampleDynamoDbRepository
         {
             return await GSI1QueryItemsByParentIdAsync(projectId);
         }
+
+
     }
 }
