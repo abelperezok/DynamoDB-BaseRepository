@@ -40,3 +40,6 @@ jobs:
     - name: Create Nuget package
       run: dotnet pack --configuration Release --no-build -p:PackageVersion=0.0.$GITHUB_RUN_NUMBER
       working-directory: src/DynamoDbRepository
+    - name: Create Nuget package
+      run: dotnet nuget push dotnet nuget push **/*.nupkg --source "github"
+      working-directory: src/DynamoDbRepository
