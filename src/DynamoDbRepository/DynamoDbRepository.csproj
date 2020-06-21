@@ -8,4 +8,13 @@
     <PackageReference Include="AWSSDK.DynamoDBv2" Version="3.3.105.18" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <Authors>Abel Perez</Authors>
+    <PackageTags>DynamoDB; repository; </PackageTags>
+    <PackageProjectUrl>https://github.com/abelperezok/DynamoDB-BaseRepository</PackageProjectUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>git://github.com/abelperezok/DynamoDB-BaseRepository</RepositoryUrl>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+
 </Project>

@@ -37,3 +37,6 @@ jobs:
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         path-to-lcov: test/DynamoDbRepository.Tests/TestResults/coverage.info
+    - name: Create Nuget package
+      run: dotnet pack --configuration Release --no-build -p:PackageVersion=0.0.$GITHUB_RUN_NUMBER
+      working-directory: src/DynamoDbRepository
