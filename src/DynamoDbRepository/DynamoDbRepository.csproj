@@ -15,6 +15,11 @@
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>git://github.com/abelperezok/DynamoDB-BaseRepository</RepositoryUrl>
     <SignAssembly>true</SignAssembly>
+    <Description>
+    C# .NET Core implementation of the repository pattern using DynamoDB. 
+    It uses single table and hierarchical data modelling approach overloading the partition and sort key as well secondary index.
+    </Description>
+    <PackageTags>dynamodb; csharp; dotnet-core; dotnet-standard; repository-pattern; single-table-design; partition; sort-key; crud; batch;</PackageTags>
   </PropertyGroup>
 
 </Project>
