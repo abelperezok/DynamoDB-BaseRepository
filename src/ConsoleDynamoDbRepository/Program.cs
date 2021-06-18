@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
 using DynamoDbRepository;
+using Microsoft.Extensions.DependencyInjection;
 using SampleDynamoDbRepository;
 
 namespace ConsoleDynamoDbRepository
@@ -41,7 +42,30 @@ namespace ConsoleDynamoDbRepository
 
             // await TestCRUD_GameRepo_GenericMethods();
 
-            await TestCRUD_PersonRepository();
+            // await TestCRUD_PersonRepository();
+
+            // DI example
+            var serviceProvider = new ServiceCollection()
+                // Add repositories via DI 
+                .AddTransient<IUserRepository, UserRepository>(
+                    x => new UserRepository(_tableName) // this value should maybe come from configuration
+                )
+                // Build the service provider
+                .BuildServiceProvider(false);
+
+            using (var scope = serviceProvider.CreateScope())
+            {
+                // Instantiate the Repo
+                var userRepo = serviceProvider.GetRequiredService<IUserRepository>();
+
+                // var users = await userRepo.GetUserList();
+                // foreach (var item in users)
+                // {
+                //     Console.WriteLine(JsonSerializer.Serialize(item));
+                // }
+
+                await TestCRUD_UserRepository(userRepo);
+            }
         }
 
         private static async Task TestCRUD_GameRepository()
@@ -77,9 +101,9 @@ namespace ConsoleDynamoDbRepository
             await repo.DeleteItemAsync("U1", g2.Id);
         }
 
-        private static async Task TestCRUD_UserRepository()
+        private static async Task TestCRUD_UserRepository(IUserRepository repo)
         {
-            IUserRepository repo = new UserRepository(_tableName);
+            // IUserRepository repo = new UserRepository(_tableName);
 
             var u1 = new User { Id = "U1", Name = "userU1", FirstName = "User", LastName = "U1", Email = "u1@test.com" };
             Console.WriteLine("* Creating user U1");
